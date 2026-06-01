@@ -24,6 +24,8 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import { COMMAND_REGISTRY, COMMAND_CATEGORIES, COMMAND_PARAMS, getCommandsByCategory, COMMAND_STATES, DEVICE_STATES, type CommandField, type CommandParams } from '@/lib/commands'
+import { ErrorDetectorToggle } from '@/components/error-detector-panel'
+import { errorDetector } from '@/lib/error-detector'
 
 // Types
 interface Device {
@@ -98,6 +100,7 @@ export default function Dashboard() {
 
   // Fetch data function (doesn't call setState directly in effect body)
   const fetchData = useCallback(async () => {
+    const startTime = Date.now()
     try {
       const [devicesRes, commandsRes, statsRes] = await Promise.all([
         fetch('/api/devices'),
@@ -112,8 +115,26 @@ export default function Dashboard() {
       if (devicesData.ok) setDevices(devicesData.devices)
       if (commandsData.ok) setCommands(commandsData.commands)
       if (statsData.ok) setStats(statsData.stats)
-    } catch (error) {
-      console.error('Error fetching data:', error)
+
+      errorDetector.logAction({
+        action: 'Fetch Data',
+        component: 'Dashboard',
+        success: true,
+        duration: Date.now() - startTime
+      })
+    } catch (error: any) {
+      errorDetector.logAction({
+        action: 'Fetch Data',
+        component: 'Dashboard',
+        success: false,
+        duration: Date.now() - startTime,
+        error: error.message
+      })
+      errorDetector.logError({
+        type: 'api',
+        message: `Error fetching data: ${error.message}`,
+        component: 'Dashboard'
+      })
     }
   }, [])
 
@@ -182,6 +203,7 @@ export default function Dashboard() {
   const sendCommand = async (cmd: string, params?: Record<string, unknown>) => {
     if (!selectedDevice) return
     setLoading(true)
+    const startTime = Date.now()
     try {
       const res = await fetch('/api/commands', {
         method: 'POST',
@@ -195,9 +217,35 @@ export default function Dashboard() {
       const data = await res.json()
       if (data.ok) {
         fetchData()
+        errorDetector.logAction({
+          action: `Send Command: ${cmd}`,
+          component: 'Dashboard',
+          success: true,
+          duration: Date.now() - startTime,
+          data: { deviceId: selectedDevice.id, params }
+        })
+      } else {
+        errorDetector.logError({
+          type: 'api',
+          message: `Command failed: ${data.error || 'Unknown error'}`,
+          component: 'Dashboard',
+          action: cmd
+        })
       }
-    } catch (error) {
-      console.error('Error sending command:', error)
+    } catch (error: any) {
+      errorDetector.logAction({
+        action: `Send Command: ${cmd}`,
+        component: 'Dashboard',
+        success: false,
+        duration: Date.now() - startTime,
+        error: error.message
+      })
+      errorDetector.logError({
+        type: 'api',
+        message: `Error sending command: ${error.message}`,
+        component: 'Dashboard',
+        action: cmd
+      })
     }
     setLoading(false)
   }
@@ -1112,6 +1160,9 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Error Detector Toggle - أداة فحص الأخطاء */}
+      <ErrorDetectorToggle />
     </div>
   )
 }
