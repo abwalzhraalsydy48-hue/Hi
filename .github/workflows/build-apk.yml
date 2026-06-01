@@ -18,7 +18,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: 📱 Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -30,29 +29,55 @@ jobs:
         working-directory: android-project
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 || true
-          
-      - name: 📁 Find APK Files
+          echo "=== Building APK ==="
+          ./gradlew assembleDebug --no-daemon --stacktrace
+          echo "=== Build completed ==="
+
+      - name: 📁 Debug - Show All Files
         run: |
-          echo "Searching for APK files..."
-          find . -name "*.apk" 2>/dev/null
-          
-          # Create output directory
+          echo "=== Listing all files in project ==="
+          ls -la android-project/
+          echo "=== Listing app/build ==="
+          ls -laR android-project/app/build/ 2>/dev/null || echo "No build directory"
+          echo "=== Finding all APK files ==="
+          find . -name "*.apk" -type f -ls 2>/dev/null || echo "No APK files found"
+
+      - name: 📦 Prepare APK for Upload
+        run: |
           mkdir -p output-apk
           
-          # Copy any APK found
-          for apk in $(find . -name "*.apk" 2>/dev/null); do
-            echo "Found: $apk"
-            cp "$apk" output-apk/
+          # Try multiple locations
+          for pattern in \
+            "android-project/app/build/outputs/apk/debug/*.apk" \
+            "android-project/app/build/outputs/apk/*.apk" \
+            "android-project/**/build/outputs/**/*.apk" \
+            "**/*.apk"
+          do
+            echo "Searching: $pattern"
+            for file in $pattern; do
+              if [ -f "$file" ]; then
+                echo "Found APK: $file"
+                cp "$file" output-apk/
+              fi
+            done
           done
           
+          echo "=== Files in output-apk ==="
           ls -la output-apk/
+          
+          # Check if we have any APK
+          APK_COUNT=$(ls -1 output-apk/*.apk 2>/dev/null | wc -l)
+          echo "APK Count: $APK_COUNT"
+          
+          if [ "$APK_COUNT" -eq 0 ]; then
+            echo "⚠️ No APK files found to upload"
+          fi
 
-      - name: 📊 Upload APK
+      - name: 📊 Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AbuZahra-APK
-          path: output-apk/*.apk
+          path: output-apk/
           retention-days: 30
           if-no-files-found: warn
 
@@ -69,26 +94,40 @@ jobs:
           path: ./apk
         continue-on-error: true
 
-      - name: 📋 List Files
-        run: ls -la ./apk/ 2>/dev/null || echo "No APK found"
+      - name: 📋 List Downloaded Files
+        id: check-apk
+        run: |
+          ls -la ./apk/ 2>/dev/null || echo "No APK directory"
+          APK_COUNT=$(ls -1 ./apk/*.apk 2>/dev/null | wc -l || echo "0")
+          echo "apk_count=$APK_COUNT" >> $GITHUB_OUTPUT
+          echo "APK files found: $APK_COUNT"
 
       - name: 📦 Create Release
+        if: steps.check-apk.outputs.apk_count > 0
         uses: softprops/action-gh-release@v1
-        if: hashFiles('./apk/*.apk') != ''
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: أبو الزهراء APK v1.0.${{ github.run_number }}
           body: |
             ## 📱 تطبيق أبو الزهراء للاندرويد
             
+            تطبيق للتحكم عن بعد بالأجهزة عبر لوحة تحكم متكاملة.
+            
             ### 🔧 التثبيت:
             1. حمّل ملف APK
-            2. فعّل "مصادر غير معروفة" في الإعدادات
-            3. افتح الملف للتثبيت
+            2. فعّل "تثبيت من مصادر غير معروفة" في الإعدادات
+            3. افتح ملف APK للتثبيت
             
-            ### 📅 معلومات:
+            ### 📅 معلومات البناء:
             - Commit: ${{ github.sha }}
-            - Date: ${{ github.event.head_commit.timestamp }}
+            - التاريخ: ${{ github.event.head_commit.timestamp }}
           files: ./apk/*.apk
+          draft: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ⚠️ No APK Warning
+        if: steps.check-apk.outputs.apk_count == 0
+        run: |
+          echo "No APK files were found. The build may have failed silently."
+          echo "Check the build logs for more details."
