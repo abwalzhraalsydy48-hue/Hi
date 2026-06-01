@@ -1,5 +1,3 @@
-// Abu-Zahra Database Schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,64 +8,142 @@ datasource db {
 }
 
 model Device {
-  id          String   @id
-  name        String?
-  model       String?
-  brand       String?
-  os          String?
-  battery     String?
-  network     String?
-  location    String?
-  active      Boolean  @default(false)
-  token       String?
-  lastSeen    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  commands    Command[]
-  events      Event[]
-  linkCodeId  String?  @unique
-  linkCode    LinkCode?  @relation(fields: [linkCodeId], references: [id])
+  id               String             @id
+  name             String?
+  model            String?
+  brand            String?
+  os               String?
+  androidVersion   Int?
+  battery          String?
+  batteryStatus    String?
+  network          String?
+  networkType      String?
+  wifiConnected    Boolean            @default(false)
+  mobileData       Boolean            @default(false)
+  location         String?
+  active           Boolean            @default(false)
+  state            String?
+  token            String?
+  storageAvailable Float?
+  storageTotal     Float?
+  storagePercent   Float?
+  lastSeen         DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  linkCodeId       String?            @unique
+  commands         Command[]
+  linkCode         LinkCode?          @relation(fields: [linkCodeId], references: [id])
+  healthRecords    DeviceHealth[]
+  permissions      DevicePermission[]
+  sessions         DeviceSession[]
+  events           Event[]
+}
+
+model DeviceSession {
+  id             String    @id @default(cuid())
+  deviceId       String
+  state          String?
+  lastHeartbeat  DateTime?
+  connectedAt    DateTime?
+  disconnectedAt DateTime?
+  uptimeSeconds  Int       @default(0)
+  ipAddress      String?
+  connectionType String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  device         Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+}
+
+model DeviceHealth {
+  id               String   @id @default(cuid())
+  deviceId         String
+  batteryLevel     Float?
+  batteryStatus    String?
+  storageAvailable Float?
+  storageTotal     Float?
+  storagePercent   Float?
+  networkType      String?
+  wifiConnected    Boolean  @default(false)
+  mobileData       Boolean  @default(false)
+  cpuUsage         Float?
+  ramUsage         Float?
+  temperature      Float?
+  createdAt        DateTime @default(now())
+  device           Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+}
+
+model DevicePermission {
+  id         String    @id @default(cuid())
+  deviceId   String
+  permission String
+  granted    Boolean   @default(false)
+  askedAt    DateTime?
+  grantedAt  DateTime?
+  deniedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  device     Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, permission])
 }
 
 model Command {
-  id          String   @id @default(cuid())
-  deviceId    String
-  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  command     String
-  params      String?  // JSON string
-  status      String   @default("pending") // pending, sent, completed, error
-  result      String?  // JSON string
-  createdAt   DateTime @default(now())
-  sentAt      DateTime?
-  completedAt DateTime?
+  id                String    @id @default(cuid())
+  deviceId          String
+  command           String
+  params            String?
+  status            String    @default("queued")
+  previousStatus    String?
+  priority          Int       @default(1)
+  timeout           Int       @default(120)
+  maxRetries        Int       @default(3)
+  retryCount        Int       @default(0)
+  progress          Int       @default(0)
+  progressMessage   String?
+  createdAt         DateTime  @default(now())
+  deliveredAt       DateTime?
+  executingAt       DateTime?
+  completedAt       DateTime?
+  timeoutAt         DateTime?
+  queueDuration     Float?
+  deliveryDuration  Float?
+  executionDuration Float?
+  totalDuration     Float?
+  result            String?
+  resultType        String?
+  errorCode         String?
+  errorMessage      String?
+  source            String    @default("telegram")
+  retryHistory      String?
+  device            Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 }
 
 model Event {
   id        String   @id @default(cuid())
   deviceId  String?
-  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   event     String
-  details   String?  // JSON string
-  level     String   @default("info") // info, warning, error
+  details   String?
+  level     String   @default("info")
   createdAt DateTime @default(now())
+  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 }
 
 model LinkCode {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  used      Boolean  @default(false)
-  deviceId  String?  @unique
-  device    Device?
+  id        String    @id @default(cuid())
+  code      String    @unique
+  used      Boolean   @default(false)
+  deviceId  String?   @unique
   sessionId String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   usedAt    DateTime?
+  device    Device?
 }
 
 model Setting {
-  id                String   @id @default(cuid())
-  key               String   @unique
-  value             String
-  updatedAt         DateTime @updatedAt
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model Session {
@@ -81,12 +157,48 @@ model Session {
 }
 
 model TelegramMessage {
-  id           String   @id @default(cuid())
-  chatId       String
-  messageId    String
-  text         String?
-  type         String   @default("text") // text, photo, video, document
-  fromBot      Boolean  @default(false)
-  processed    Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid())
+  chatId    String
+  messageId String
+  text      String?
+  type      String   @default("text")
+  fromBot   Boolean  @default(false)
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PermissionRegistry {
+  id              String  @id @default(cuid())
+  permission      String  @unique
+  group           String
+  label           String
+  description     String?
+  androidLevel    Int     @default(1)
+  runtimeRequired Boolean @default(true)
+  specialHandling Boolean @default(false)
+  commands        String?
+}
+
+model CommandParam {
+  id        String   @id @default(cuid())
+  command   String   @unique
+  title     String?
+  confirm   String?
+  fields    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Geofence {
+  id         String   @id @default(cuid())
+  deviceId   String
+  name       String
+  lat        Float
+  lon        Float
+  radius     Float
+  active     Boolean  @default(true)
+  enterAlert Boolean  @default(true)
+  exitAlert  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
