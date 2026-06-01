@@ -20,21 +20,25 @@ jobs:
           java-version: '11'
 
       - name: 📱 Setup Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+          yes | sdkmanager --licenses 2>/dev/null || true
+          sdkmanager "platforms;android-33" "build-tools;33.0.0" 2>/dev/null || true
 
       - name: 🔨 Build Debug APK
         working-directory: android-project
         run: |
           chmod +x gradlew || true
-          ./gradlew assembleDebug --stacktrace 2>&1 || ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: 📁 Find APK Files
         run: |
           echo "=== Searching for APK files ==="
-          find . -name "*.apk" -type f 2>/dev/null || echo "None found"
+          find . -name "*.apk" -type f 2>/dev/null
           mkdir -p output-apk
           find . -name "*.apk" -exec cp {} output-apk/ \; 2>/dev/null || true
-          ls -la output-apk/ || true
+          ls -la output-apk/
 
       - name: 📊 Upload APK
         uses: actions/upload-artifact@v4
