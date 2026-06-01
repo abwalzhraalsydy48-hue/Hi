@@ -316,46 +316,6 @@
             border-color: #dc2626;
         }
         
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 16px;
-        }
-        
-        .modal-content {
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-            border: 1px solid #334155;
-        }
-        
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -387,15 +347,80 @@
         
         .section { display: none; }
         .section.active { display: block; }
+        
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 1000;
+            border: 1px solid #334155;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+        
+        .login-logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .login-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .login-subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
+    <!-- Login Section -->
+    <div id="login-section" class="section active">
+        <div class="login-container">
+            <div class="login-logo">🛡️</div>
+            <div class="login-title">أبو الزهراء</div>
+            <div class="login-subtitle">لوحة التحكم المتكاملة</div>
+            
+            <div class="card" style="width: 100%; max-width: 400px;">
+                <div class="card-title">🔐 تسجيل الدخول</div>
+                <input type="text" class="input" id="login-username" placeholder="اسم المستخدم">
+                <input type="password" class="input" id="login-password" placeholder="كلمة المرور">
+                <button class="btn btn-success" onclick="login()">
+                    <span>🔑</span> دخول
+                </button>
+                <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 16px;">
+                    المستخدم الافتراضي: admin / admin123
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Header (shown after login) -->
+    <div id="app-header" class="header hidden">
         <div class="logo">🛡️</div>
         <div>
             <div class="title">أبو الزهراء</div>
-            <div class="subtitle" id="version">v2.0 - لوحة التحكم المتكاملة</div>
+            <div class="subtitle" id="version">v5.0 - لوحة التحكم المتكاملة</div>
         </div>
         <div class="connection-status">
             <div class="status-dot" id="status-dot"></div>
@@ -410,7 +435,7 @@
     </div>
     
     <!-- Main Section -->
-    <div id="main-section" class="section active">
+    <div id="main-section" class="section">
         <!-- Stats -->
         <div class="card">
             <div class="card-title">📊 الإحصائيات</div>
@@ -444,6 +469,9 @@
                 <div>كود الربط:</div>
                 <div class="link-code-value" id="link-code-value">------</div>
                 <div class="link-code-info">أدخل هذا الكود في التطبيق المستهدف للربط</div>
+                <button class="btn btn-secondary" style="margin-top: 10px;" onclick="copyLinkCode()">
+                    <span>📋</span> نسخ الكود
+                </button>
             </div>
         </div>
         
@@ -548,10 +576,14 @@
     <!-- Settings Section -->
     <div id="settings-section" class="section">
         <div class="card">
-            <div class="card-title">⚙️ إعدادات الخادم</div>
-            <input type="url" class="input" id="server-url-input" placeholder="رابط الخادم">
-            <button class="btn" onclick="saveServerUrl()">💾 حفظ الإعدادات</button>
-            <button class="btn btn-secondary" onclick="testConnection()">🔍 اختبار الاتصال</button>
+            <div class="card-title">👤 معلومات الحساب</div>
+            <div style="background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                <div style="font-size: 14px;">المستخدم: <span id="user-name">-</span></div>
+                <div style="font-size: 12px; color: #94a3b8;">البريد: <span id="user-email">-</span></div>
+            </div>
+            <button class="btn btn-warning" onclick="logout()">
+                <span>🚪</span> تسجيل الخروج
+            </button>
         </div>
         
         <div class="card">
@@ -576,7 +608,7 @@
     </div>
     
     <!-- Bottom Navigation -->
-    <div class="bottom-nav">
+    <div id="bottom-nav" class="bottom-nav hidden">
         <div class="nav-item active" data-section="main" onclick="showSection('main')">
             <div class="nav-item-icon">🏠</div>
             <div>الرئيسية</div>
@@ -598,8 +630,10 @@
     <script>
         // ==================== Configuration ====================
         const SERVER_URL = 'https://alsydyabwalzhra.online';
+        const API_PREFIX = '/api/v1';
         const CACHE_KEY = 'abu_zahra_cache';
-        const SETTINGS_KEY = 'abu_zahra_settings';
+        const TOKEN_KEY = 'abu_zahra_token';
+        const USER_KEY = 'abu_zahra_user';
         
         // ==================== Command Registry ====================
         const COMMANDS = {
@@ -715,6 +749,8 @@
         
         // ==================== State ====================
         let serverUrl = SERVER_URL;
+        let apiToken = localStorage.getItem(TOKEN_KEY) || null;
+        let userData = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
         let selectedDevice = null;
         let isOnline = true;
         let pendingCommands = [];
@@ -726,22 +762,46 @@
         });
         
         function initApp() {
-            // Set server URL
-            document.getElementById('server-url-input').value = serverUrl;
+            // Check if logged in
+            if (apiToken && userData) {
+                showApp();
+            } else {
+                showLogin();
+            }
             
             // Check online status
             updateOnlineStatus();
-            window.addEventListener('online', () => { isOnline = true; updateOnlineStatus(); syncPendingCommands(); loadDashboard(); });
+            window.addEventListener('online', () => { isOnline = true; updateOnlineStatus(); syncPendingCommands(); });
             window.addEventListener('offline', () => { isOnline = false; updateOnlineStatus(); loadCachedData(); });
+        }
+        
+        function showLogin() {
+            document.getElementById('login-section').classList.add('active');
+            document.getElementById('app-header').classList.add('hidden');
+            document.getElementById('bottom-nav').classList.add('hidden');
+            document.querySelectorAll('.section').forEach(s => {
+                if (s.id !== 'login-section') s.classList.remove('active');
+            });
+        }
+        
+        function showApp() {
+            document.getElementById('login-section').classList.remove('active');
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            document.getElementById('main-section').classList.add('active');
+            
+            // Update user info
+            if (userData) {
+                document.getElementById('user-name').textContent = userData.username || '-';
+                document.getElementById('user-email').textContent = userData.email || '-';
+            }
             
             // Load data
             loadDashboard();
             loadCommands(currentCategory);
             
             // Start auto refresh
-            setInterval(() => { if (isOnline) loadDashboard(); }, 15000);
-            
-            showToast('تم الاتصال بالخادم: ' + serverUrl);
+            setInterval(() => { if (isOnline && apiToken) loadDashboard(); }, 15000);
         }
         
         function updateOnlineStatus() {
@@ -762,33 +822,87 @@
             }
         }
         
+        // ==================== Authentication ====================
+        async function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                showToast('⚠️ الرجاء إدخال اسم المستخدم وكلمة المرور');
+                return;
+            }
+            
+            showToast('جاري تسجيل الدخول...');
+            
+            try {
+                const res = await fetch(serverUrl + API_PREFIX + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.token) {
+                    apiToken = data.token;
+                    userData = data.user;
+                    localStorage.setItem(TOKEN_KEY, apiToken);
+                    localStorage.setItem(USER_KEY, JSON.stringify(userData));
+                    showToast('✅ تم تسجيل الدخول بنجاح');
+                    showApp();
+                } else {
+                    showToast('❌ ' + (data.error || 'فشل تسجيل الدخول'));
+                }
+            } catch (e) {
+                showToast('❌ خطأ في الاتصال: ' + e.message);
+            }
+        }
+        
+        function logout() {
+            apiToken = null;
+            userData = null;
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+            showToast('تم تسجيل الخروج');
+            showLogin();
+        }
+        
         // ==================== API Functions ====================
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + apiToken
+            };
+        }
+        
         async function loadDashboard() {
-            if (!isOnline) { loadCachedData(); return; }
+            if (!isOnline || !apiToken) { loadCachedData(); return; }
             
             try {
                 const [statsRes, devicesRes] = await Promise.all([
-                    fetch(serverUrl + '/api/stats'),
-                    fetch(serverUrl + '/api/devices')
+                    fetch(serverUrl + API_PREFIX + '/stats', { headers: getHeaders() }),
+                    fetch(serverUrl + API_PREFIX + '/user/devices', { headers: getHeaders() })
                 ]);
                 
                 const statsData = await statsRes.json();
                 const devicesData = await devicesRes.json();
                 
-                if (statsData.ok) {
-                    document.getElementById('devices-count').textContent = statsData.stats.devicesTotal || 0;
-                    document.getElementById('online-count').textContent = statsData.stats.devicesOnline || 0;
-                    document.getElementById('commands-count').textContent = statsData.stats.commandsTotal || 0;
-                    document.getElementById('pending-count').textContent = statsData.stats.commandsPending || 0;
-                    cacheData('stats', statsData.stats);
+                if (statsData.success) {
+                    const stats = statsData.stats || {};
+                    document.getElementById('devices-count').textContent = stats.total_devices || 0;
+                    document.getElementById('online-count').textContent = stats.online_devices || 0;
+                    document.getElementById('commands-count').textContent = 0;
+                    document.getElementById('pending-count').textContent = 0;
+                    cacheData('stats', stats);
                 }
                 
-                if (devicesData.ok) {
-                    renderDevices(devicesData.devices);
-                    cacheData('devices', devicesData.devices);
+                if (devicesData.success) {
+                    const devices = devicesData.devices || [];
+                    renderDevices(devices);
+                    cacheData('devices', devices);
                     
-                    if (devicesData.devices.length > 0 && !selectedDevice) {
-                        selectedDevice = devicesData.devices[0].id;
+                    if (devices.length > 0 && !selectedDevice) {
+                        selectedDevice = devices[0].id;
                     }
                 }
             } catch (e) {
@@ -802,10 +916,8 @@
             const devices = getCachedData('devices');
             
             if (stats) {
-                document.getElementById('devices-count').textContent = stats.devicesTotal || 0;
-                document.getElementById('online-count').textContent = stats.devicesOnline || 0;
-                document.getElementById('commands-count').textContent = stats.commandsTotal || 0;
-                document.getElementById('pending-count').textContent = stats.commandsPending || 0;
+                document.getElementById('devices-count').textContent = stats.total_devices || 0;
+                document.getElementById('online-count').textContent = stats.online_devices || 0;
             }
             
             if (devices) {
@@ -832,7 +944,6 @@
                     </div>
                     <div style="text-align:left">
                         <div style="font-size:12px;color:#94a3b8">🔋 ${d.battery || '-'}%</div>
-                        <div style="font-size:10px;color:#64748b">${d.networkType || ''}</div>
                     </div>
                 </div>
             `).join('');
@@ -845,27 +956,54 @@
         }
         
         async function generateLinkCode() {
+            if (!apiToken) {
+                showToast('⚠️ الرجاء تسجيل الدخول أولاً');
+                return;
+            }
+            
             showToast('جاري توليد كود الربط...');
             
             try {
-                const res = await fetch(serverUrl + '/api/link-code', { method: 'POST' });
+                const res = await fetch(serverUrl + API_PREFIX + '/link-code', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({})
+                });
+                
                 const data = await res.json();
                 
-                if (data.ok && data.code) {
+                if (data.success && data.code) {
                     document.getElementById('link-code-value').textContent = data.code;
                     document.getElementById('link-code-container').classList.remove('hidden');
                     showToast('✅ تم توليد الكود: ' + data.code);
+                    if (window.AndroidInterface) AndroidInterface.vibrate(100);
                 } else {
-                    showToast('❌ فشل توليد الكود');
+                    showToast('❌ فشل توليد الكود: ' + (data.error || 'خطأ غير معروف'));
                 }
             } catch (e) {
                 showToast('❌ خطأ: ' + e.message);
             }
         }
         
+        function copyLinkCode() {
+            const code = document.getElementById('link-code-value').textContent;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code);
+                showToast('✅ تم نسخ الكود');
+            } else if (window.AndroidInterface) {
+                AndroidInterface.copyToClipboard(code);
+                showToast('✅ تم نسخ الكود');
+            }
+        }
+        
         async function sendCommand(cmd) {
             if (!selectedDevice) {
                 showToast('⚠️ الرجاء تحديد جهاز أولاً');
+                return;
+            }
+            
+            if (!apiToken) {
+                showToast('⚠️ الرجاء تسجيل الدخول أولاً');
                 return;
             }
             
@@ -878,19 +1016,19 @@
             showToast('جاري إرسال الأمر...');
             
             try {
-                const res = await fetch(serverUrl + '/api/commands', {
+                const res = await fetch(serverUrl + API_PREFIX + '/device/' + selectedDevice + '/command', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ deviceId: selectedDevice, command: cmd })
+                    headers: getHeaders(),
+                    body: JSON.stringify({ command: cmd })
                 });
                 
                 const data = await res.json();
                 
-                if (data.ok) {
+                if (data.success) {
                     showToast('✅ تم إرسال الأمر');
                     if (window.AndroidInterface) AndroidInterface.vibrate(100);
                 } else {
-                    showToast('❌ فشل إرسال الأمر');
+                    showToast('❌ فشل إرسال الأمر: ' + (data.error || ''));
                 }
             } catch (e) {
                 savePendingCommand(cmd, selectedDevice);
@@ -902,10 +1040,10 @@
             showToast('جاري اختبار الاتصال...');
             
             try {
-                const res = await fetch(serverUrl + '/api/stats', { signal: AbortSignal.timeout(10000) });
+                const res = await fetch(serverUrl + API_PREFIX + '/health', { signal: AbortSignal.timeout(10000) });
                 const data = await res.json();
                 
-                if (data.ok) {
+                if (data.status === 'healthy') {
                     showToast('✅ الخادم متصل ويعمل بشكل صحيح');
                 } else {
                     showToast('⚠️ الخادم يستجيب لكن هناك مشكلة');
@@ -915,27 +1053,12 @@
             }
         }
         
-        function saveServerUrl() {
-            const input = document.getElementById('server-url-input');
-            let url = input.value.trim();
-            
-            if (url && !url.startsWith('http')) {
-                url = 'https://' + url;
-                input.value = url;
-            }
-            
-            serverUrl = url || SERVER_URL;
-            localStorage.setItem('serverUrl', serverUrl);
-            showToast('✅ تم حفظ الإعدادات');
-            loadDashboard();
-        }
-        
         // ==================== Commands ====================
         function selectCategory(cat) {
             currentCategory = cat;
             
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.tab[data-cat="${cat}"]`).classList.add('active');
+            document.querySelector('.tab[data-cat="' + cat + '"]').classList.add('active');
             
             loadCommands(cat);
         }
@@ -958,7 +1081,7 @@
             document.getElementById(section + '-section').classList.add('active');
             
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelector(`.nav-item[data-section="${section}"]`).classList.add('active');
+            document.querySelector('.nav-item[data-section="' + section + '"]').classList.add('active');
         }
         
         // ==================== Utilities ====================
@@ -983,49 +1106,42 @@
             localStorage.setItem('pending_commands', JSON.stringify(pending));
         }
         
-        async function syncPendingCommands() {
+        function syncPendingCommands() {
             const pending = JSON.parse(localStorage.getItem('pending_commands') || '[]');
             if (pending.length === 0) return;
             
-            showToast(`جاري إرسال ${pending.length} أوامر محفوظة...`);
+            // Try to send pending commands
+            pending.forEach(cmd => {
+                sendCommand(cmd.command);
+            });
             
-            const failed = [];
-            for (const cmd of pending) {
-                try {
-                    const res = await fetch(serverUrl + '/api/commands', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ deviceId: cmd.deviceId, command: cmd.command })
-                    });
-                    if (!res.ok) failed.push(cmd);
-                } catch (e) { failed.push(cmd); }
-            }
-            
-            localStorage.setItem('pending_commands', JSON.stringify(failed));
-            
-            if (failed.length === 0) {
-                showToast('✅ تم إرسال جميع الأوامر المحفوظة');
-            } else {
-                showToast(`⚠️ فشل إرسال ${failed.length} أوامر`);
-            }
+            localStorage.removeItem('pending_commands');
         }
         
         function refreshAllData() {
-            showToast('جاري التحديث...');
             loadDashboard();
+            showToast('✅ تم تحديث البيانات');
         }
         
         function clearCache() {
             localStorage.removeItem(CACHE_KEY);
             showToast('✅ تم مسح الكاش');
+            loadDashboard();
         }
         
-        function showToast(msg) {
-            if (window.AndroidInterface) {
-                AndroidInterface.showToast(msg);
-            } else {
-                console.log('Toast:', msg);
-            }
+        function showToast(message) {
+            // Remove existing toast
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Remove after 3 seconds
+            setTimeout(() => toast.remove(), 3000);
         }
     </script>
 </body>
