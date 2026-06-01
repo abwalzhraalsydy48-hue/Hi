@@ -22,15 +22,32 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android licenses
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          # Install Android SDK manually
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          
+          # Download command line tools
+          cd $ANDROID_HOME/cmdline-tools
+          curl -sO https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mv cmdline-tools latest
+          
+          # Accept licenses and install required components
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
       - name: Create launcher icons
         run: |
+          # Create drawable directory
+          mkdir -p android-project/app/src/main/res/drawable
+          
           # Create mipmap directories
           mkdir -p android-project/app/src/main/res/mipmap-hdpi
           mkdir -p android-project/app/src/main/res/mipmap-mdpi
@@ -86,25 +103,6 @@ jobs:
               <foreground android:drawable="@drawable/ic_launcher_foreground"/>
           </adaptive-icon>
           EOF
-          
-          # Create simple PNG icons for older devices (using XML shapes)
-          for size in hdpi mdpi xhdpi xxhdpi xxxhdpi; do
-            cat > android-project/app/src/main/res/mipmap-$size/ic_launcher.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <shape xmlns:android="http://schemas.android.com/apk/res/android"
-              android:shape="rectangle">
-              <solid android:color="#0f172a"/>
-              <corners android:radius="8dp"/>
-          </shape>
-          EOF
-            cat > android-project/app/src/main/res/mipmap-$size/ic_launcher_round.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <shape xmlns:android="http://schemas.android.com/apk/res/android"
-              android:shape="oval">
-              <solid android:color="#0f172a"/>
-          </shape>
-          EOF
-          done
 
       - name: Make Gradle executable
         run: chmod +x android-project/gradlew
