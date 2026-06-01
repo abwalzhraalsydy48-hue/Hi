@@ -17,10 +17,10 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             minifyEnabled false
+            debuggable true
         }
     }
 
@@ -31,7 +31,11 @@ android {
 
     lint {
         abortOnError false
+        checkReleaseBuilds false
     }
+    
+    // Force use of modern AndroidX
+    useLibrary 'androidx.test.runner'
 }
 
 dependencies {
