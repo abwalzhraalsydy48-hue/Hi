@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>غير متصل - أبو الزهراء</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 400px;
+    }
+    
+    .icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 30px;
+      box-shadow: 0 20px 40px rgba(220, 38, 38, 0.3);
+    }
+    
+    .icon svg {
+      width: 60px;
+      height: 60px;
+      fill: white;
+    }
+    
+    h1 {
+      font-size: 28px;
+      margin-bottom: 15px;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    p {
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    
+    .retry-btn {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
+    }
+    
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(220, 38, 38, 0.4);
+    }
+    
+    .wifi-icon {
+      margin-bottom: 20px;
+    }
+    
+    .wifi-icon svg {
+      width: 80px;
+      height: 80px;
+      stroke: #64748b;
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    
+    <div class="wifi-icon pulse">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+    </div>
+    
+    <h1>غير متصل بالإنترنت</h1>
+    <p>
+      يبدو أنك غير متصل بالإنترنت حالياً.
+      <br>
+      تحقق من اتصالك وحاول مرة أخرى.
+    </p>
+    
+    <button class="retry-btn" onclick="window.location.reload()">
+      🔄 إعادة المحاولة
+    </button>
+  </div>
+  
+  <script>
+    // Check connection and reload when online
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

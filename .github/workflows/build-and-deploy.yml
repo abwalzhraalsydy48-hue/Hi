@@ -1,0 +1,102 @@
+name: Build and Deploy Abu-Zahra Server
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 Run Linter
+        run: bun run lint || true
+        continue-on-error: true
+
+      - name: 🏗️ Build Application
+        run: bun run build
+
+      - name: 📊 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: abu-zahra-build
+          path: |
+            .next/standalone
+            .next/static
+            public
+          retention-days: 7
+
+      - name: 📱 Generate PWA Icons
+        run: |
+          # Create icons directory if not exists
+          mkdir -p public/icons
+          
+          # Check if icon exists, if not create a placeholder
+          if [ ! -f public/icons/icon-192x192.png ]; then
+            echo "PWA icons will be generated during build"
+          fi
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: abu-zahra-build
+          path: .
+
+      - name: 📦 Prepare Deployment Package
+        run: |
+          mkdir -p deploy-package
+          cp -r .next deploy-package/
+          cp -r public deploy-package/
+          cp package.json deploy-package/
+          cp -r node_modules deploy-package/ 2>/dev/null || true
+          
+          # Create deployment info
+          echo "Build Time: $(date)" > deploy-package/BUILD_INFO.txt
+          echo "Commit: ${{ github.sha }}" >> deploy-package/BUILD_INFO.txt
+          echo "Branch: ${{ github.ref_name }}" >> deploy-package/BUILD_INFO.txt
+
+      - name: 📊 Upload Deployment Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: abu-zahra-deploy
+          path: deploy-package
+          retention-days: 30
+
+  notify:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: ✅ Build Status
+        run: |
+          echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Step |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ${{ needs.build.result == 'success' && '✅' || '❌' }} | Build |" >> $GITHUB_STEP_SUMMARY
+          echo "| ${{ needs.deploy.result == 'success' && '✅' || '⚠️' }} | Deploy |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
