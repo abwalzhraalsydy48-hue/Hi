@@ -20,7 +20,7 @@ import {
   Clock,
   Zap,
   Wifi,
-  UiIcon,
+  Monitor,
   Database,
   AlertCircle
 } from 'lucide-react';
@@ -53,7 +53,7 @@ export function ErrorDetectorPanel({ isOpen = true, onClose }: ErrorDetectorPane
       case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
       case 'network': return <Wifi className="h-4 w-4 text-blue-500" />;
       case 'api': return <Database className="h-4 w-4 text-purple-500" />;
-      case 'ui': return <UiIcon className="h-4 w-4 text-orange-500" />;
+      case 'ui': return <Monitor className="h-4 w-4 text-orange-500" />;
       case 'state': return <Activity className="h-4 w-4 text-cyan-500" />;
       default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
