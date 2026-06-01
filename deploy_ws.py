@@ -1,93 +1,84 @@
 #!/usr/bin/env python3
 import paramiko
-import time
 import sys
 
 # VPS Connection Details
 VPS_HOST = "216.128.156.226"
 VPS_USER = "root"
-VPS_PASSWORD = "Aa12122000@"
+VPS_PASSWORD = "E%t7SBQUAL2SE[kc"
 
-def run_command(ssh, command, timeout=60):
-    """Run a command on the VPS and return the output"""
+def run_command(ssh, command, timeout=120):
     print(f"\n🔧 Executing: {command}")
     print("-" * 50)
-    
     stdin, stdout, stderr = ssh.exec_command(command, timeout=timeout)
-    
-    # Get output
     output = stdout.read().decode('utf-8')
     error = stderr.read().decode('utf-8')
-    exit_code = stdout.channel.recv_exit_status()
-    
     if output:
         print(output)
-    if error:
+    if error and "pm2" not in command.lower():
         print(f"STDERR: {error}")
-    
-    return exit_code, output, error
+    return output, error
 
 def main():
     print("🚀 Deploying WebSocket Server to VPS...")
     print(f"📍 Host: {VPS_HOST}")
     
-    # Create SSH client
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     
     try:
-        # Connect to VPS
         print("\n🔌 Connecting to VPS...")
         ssh.connect(VPS_HOST, username=VPS_USER, password=VPS_PASSWORD, timeout=30)
         print("✅ Connected successfully!")
         
-        # Commands to execute
         commands = [
-            # Navigate to project directory
-            "cd /root/abu-zahra-server && pwd",
+            # Check project location
+            "ls -la /opt/abu-zahra-server/",
             
             # Pull latest changes
-            "cd /root/abu-zahra-server && git pull origin main",
+            "cd /opt/abu-zahra-server && git fetch origin && git pull origin main",
+            
+            # Check if mini-services/device-ws exists
+            "ls -la /opt/abu-zahra-server/mini-services/",
             
             # Install dependencies for device-ws
-            "cd /root/abu-zahra-server/mini-services/device-ws && bun install",
+            "cd /opt/abu-zahra-server/mini-services/device-ws && bun install",
             
             # Stop existing device-ws if running
-            "pm2 stop device-ws 2>/dev/null || echo 'No existing process'",
+            "pm2 stop device-ws 2>/dev/null; pm2 delete device-ws 2>/dev/null; echo 'Cleaned up'",
             
             # Start device-ws with pm2
-            "cd /root/abu-zahra-server/mini-services/device-ws && pm2 start 'bun run index.ts' --name device-ws",
+            "cd /opt/abu-zahra-server/mini-services/device-ws && pm2 start 'bun run index.ts' --name device-ws",
+            
+            # Save pm2 config
+            "pm2 save",
             
             # Copy Caddyfile
-            "cp /root/abu-zahra-server/Caddyfile /etc/caddy/Caddyfile",
+            "cp /opt/abu-zahra-server/Caddyfile /etc/caddy/Caddyfile",
+            
+            # Validate Caddy config
+            "caddy validate --config /etc/caddy/Caddyfile 2>&1",
             
             # Reload Caddy
-            "systemctl reload caddy",
+            "systemctl reload caddy && echo 'Caddy reloaded'",
             
             # Check status
             "pm2 list",
             
-            # Test WebSocket endpoint
-            "curl -s -o /dev/null -w '%{http_code}' http://localhost:3004 || echo 'WS server not responding to HTTP (expected)'"
+            # Check if port 3004 is listening
+            "ss -tlnp | grep 3004"
         ]
         
         for cmd in commands:
             try:
                 run_command(ssh, cmd, timeout=120)
             except Exception as e:
-                print(f"⚠️ Command failed: {cmd}")
-                print(f"   Error: {e}")
+                print(f"⚠️ Command failed: {cmd} - {e}")
         
         print("\n" + "=" * 50)
         print("✅ Deployment completed!")
         print("=" * 50)
         
-    except paramiko.AuthenticationException:
-        print("❌ Authentication failed! Check credentials.")
-        sys.exit(1)
-    except paramiko.SSHException as e:
-        print(f"❌ SSH connection error: {e}")
-        sys.exit(1)
     except Exception as e:
         print(f"❌ Error: {e}")
         sys.exit(1)
