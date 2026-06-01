@@ -49,17 +49,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Device not found' }, { status: 404 });
     }
 
-    // Get command info
+    // Get command info and priority
     const cmdInfo = Object.entries(COMMAND_REGISTRY).find(([, info]) => info.cmd === command);
+    const priority = cmdInfo?.[1]?.priority ?? 1;
 
-    // Create command
+    // Create command with 'queued' status (must match what device expects)
     const cmd = await db.command.create({
       data: {
         id: nanoid(8),
         deviceId,
         command,
         params: params ? JSON.stringify(params) : null,
-        status: 'pending'
+        status: 'queued',  // Changed from 'pending' to match device polling
+        priority
       }
     });
 
