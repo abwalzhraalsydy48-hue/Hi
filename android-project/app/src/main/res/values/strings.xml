@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">أبو الزهراء</string>
+    <string name="app_description">لوحة التحكم المتكاملة للتحكم عن بعد بالأجهزة</string>
+    <string name="loading">جاري التحميل...</string>
+    <string name="error">حدث خطأ</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="no_internet">لا يوجد اتصال بالإنترنت</string>
+    <string name="permission_required">الإذن مطلوب</string>
+    <string name="permission_denied">تم رفض الإذن</string>
+</resources>

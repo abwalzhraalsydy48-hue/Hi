@@ -1,0 +1,28 @@
+{
+  "appId": "com.abuzahra.server",
+  "appName": "أبو الزهراء",
+  "webDir": ".next/standalone/public",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "App": {
+      "launchAutoHide": true,
+      "backgroundColor": "#0f172a",
+      "android": {
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "Network": {},
+    "Browser": {}
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#0f172a",
+    "buildOptions": {
+      "releaseType": "APK"
+    }
+  }
+}

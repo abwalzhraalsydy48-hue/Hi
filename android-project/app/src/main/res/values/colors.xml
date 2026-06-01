@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="colorPrimary">#dc2626</color>
+    <color name="colorPrimaryDark">#991b1b</color>
+    <color name="colorAccent">#dc2626</color>
+    
+    <!-- Background Colors -->
+    <color name="backgroundDark">#0f172a</color>
+    <color name="backgroundMedium">#1e293b</color>
+    <color name="backgroundLight">#334155</color>
+    
+    <!-- Text Colors -->
+    <color name="textPrimary">#ffffff</color>
+    <color name="textSecondary">#94a3b8</color>
+    <color name="textMuted">#64748b</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#22c55e</color>
+    <color name="warning">#eab308</color>
+    <color name="error">#ef4444</color>
+    <color name="info">#3b82f6</color>
+    
+    <!-- Other Colors -->
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+</resources>
