@@ -51,6 +51,28 @@
             color: #94a3b8;
         }
         
+        .connection-status {
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(15, 23, 42, 0.5);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        
+        .status-dot.offline {
+            background: #ef4444;
+        }
+        
         .card {
             background: rgba(30, 41, 59, 0.5);
             border-radius: 16px;
@@ -100,6 +122,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .device-card.selected {
+            border-color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
         }
         
         .device-info {
@@ -131,10 +161,19 @@
             margin-top: 8px;
         }
         
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
         .btn-outline {
             background: transparent;
             border: 1px solid #dc2626;
             color: #dc2626;
+        }
+        
+        .btn-secondary {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
         }
         
         .quick-actions {
@@ -152,11 +191,17 @@
             text-align: center;
             font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
         }
         
         .action-btn:active {
             background: rgba(220, 38, 38, 0.2);
             border-color: #dc2626;
+        }
+        
+        .action-btn.pending {
+            opacity: 0.6;
+            pointer-events: none;
         }
         
         .action-icon {
@@ -185,10 +230,6 @@
             font-size: 14px;
         }
         
-        .server-config {
-            margin-top: 16px;
-        }
-        
         .loading {
             display: flex;
             justify-content: center;
@@ -211,6 +252,66 @@
         .hidden {
             display: none;
         }
+        
+        .offline-banner {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .cached-badge {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-right: 8px;
+        }
+        
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        
+        .switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #334155;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .switch.active {
+            background: #dc2626;
+        }
+        
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .switch.active::after {
+            transform: translateX(20px);
+        }
     </style>
 </head>
 <body>
@@ -218,8 +319,18 @@
         <div class="logo">🛡️</div>
         <div>
             <div class="title">أبو الزهراء</div>
-            <div class="subtitle">لوحة التحكم المتكاملة v1.0</div>
+            <div class="subtitle" id="version">v2.0 - يعمل بلا إنترنت</div>
         </div>
+        <div class="connection-status" id="connection-status">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">متصل</span>
+        </div>
+    </div>
+    
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="offline-banner hidden">
+        <span>⚠️</span>
+        <span>وضع عدم الاتصال - البيانات محفوظة محلياً</span>
     </div>
     
     <!-- Server Configuration -->
@@ -230,16 +341,21 @@
             <input type="url" id="server-url" class="input" placeholder="https://your-server.com">
         </div>
         <button class="btn" onclick="connectToServer()">🔗 اتصال</button>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 8px; text-align: center;">
-            أدخل رابط الخادم للمتابعة
-        </p>
+        <button class="btn btn-outline" onclick="testConnection()">🔍 اختبار الاتصال</button>
+        <div class="auto-refresh">
+            <div class="switch active" id="auto-connect-switch" onclick="toggleAutoConnect()"></div>
+            <span>اتصال تلقائي عند فتح التطبيق</span>
+        </div>
     </div>
     
     <!-- Main Dashboard -->
     <div id="dashboard" class="hidden">
         <!-- Stats -->
         <div class="card">
-            <div class="card-title">📊 الإحصائيات</div>
+            <div class="card-title">
+                📊 الإحصائيات
+                <span class="cached-badge" id="cached-badge" style="display: none;">محفوظة</span>
+            </div>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="devices-count">0</div>
@@ -263,36 +379,36 @@
         <!-- Quick Actions -->
         <div class="card">
             <div class="card-title">⚡ إجراءات سريعة</div>
-            <div class="quick-actions">
-                <div class="action-btn" onclick="sendCommand('get_location')">
+            <div class="quick-actions" id="quick-actions">
+                <div class="action-btn" data-cmd="get_location" onclick="sendCommand('get_location')">
                     <div class="action-icon">📍</div>
                     الموقع
                 </div>
-                <div class="action-btn" onclick="sendCommand('screenshot')">
+                <div class="action-btn" data-cmd="screenshot" onclick="sendCommand('screenshot')">
                     <div class="action-icon">📷</div>
                     لقطة
                 </div>
-                <div class="action-btn" onclick="sendCommand('get_battery')">
+                <div class="action-btn" data-cmd="get_battery" onclick="sendCommand('get_battery')">
                     <div class="action-icon">🔋</div>
                     البطارية
                 </div>
-                <div class="action-btn" onclick="sendCommand('ring')">
+                <div class="action-btn" data-cmd="ring" onclick="sendCommand('ring')">
                     <div class="action-icon">🔔</div>
                     رنين
                 </div>
-                <div class="action-btn" onclick="sendCommand('get_contacts')">
+                <div class="action-btn" data-cmd="get_contacts" onclick="sendCommand('get_contacts')">
                     <div class="action-icon">👥</div>
                     جهات
                 </div>
-                <div class="action-btn" onclick="sendCommand('get_sms')">
+                <div class="action-btn" data-cmd="get_sms" onclick="sendCommand('get_sms')">
                     <div class="action-icon">💬</div>
                     رسائل
                 </div>
-                <div class="action-btn" onclick="sendCommand('get_calls')">
+                <div class="action-btn" data-cmd="get_calls" onclick="sendCommand('get_calls')">
                     <div class="action-icon">📞</div>
                     مكالمات
                 </div>
-                <div class="action-btn" onclick="sendCommand('get_info')">
+                <div class="action-btn" data-cmd="get_info" onclick="sendCommand('get_info')">
                     <div class="action-icon">ℹ️</div>
                     معلومات
                 </div>
@@ -307,32 +423,191 @@
             </div>
         </div>
         
-        <!-- Settings -->
+        <!-- Actions -->
+        <button class="btn btn-secondary" onclick="refreshData()">🔄 تحديث</button>
         <button class="btn btn-outline" onclick="showConfig()">⚙️ إعادة الإعداد</button>
     </div>
     
     <script>
-        let serverUrl = localStorage.getItem('serverUrl') || '';
+        // Configuration
+        const DEFAULT_SERVER = 'https://alsydyabwalzhra.online';
+        const CACHE_KEY = 'abu_zahra_cache';
+        const SETTINGS_KEY = 'abu_zahra_settings';
+        
+        // State
+        let serverUrl = '';
         let selectedDevice = null;
+        let isOnline = navigator.onLine;
+        let pendingCommands = [];
+        let refreshInterval = null;
+        let autoRefresh = true;
+        
+        // Cache Manager
+        const CacheManager = {
+            save(key, data) {
+                try {
+                    const cache = this.getAll();
+                    cache[key] = {
+                        data: data,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+                } catch (e) {
+                    console.error('Cache save error:', e);
+                }
+            },
+            
+            get(key) {
+                try {
+                    const cache = this.getAll();
+                    return cache[key] || null;
+                } catch (e) {
+                    return null;
+                }
+            },
+            
+            getAll() {
+                try {
+                    return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+                } catch (e) {
+                    return {};
+                }
+            },
+            
+            clear() {
+                localStorage.removeItem(CACHE_KEY);
+            }
+        };
+        
+        // Settings Manager
+        const SettingsManager = {
+            get() {
+                try {
+                    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+                } catch (e) {
+                    return {};
+                }
+            },
+            
+            save(settings) {
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            },
+            
+            getServerUrl() {
+                return this.get().serverUrl || DEFAULT_SERVER;
+            },
+            
+            setServerUrl(url) {
+                const settings = this.get();
+                settings.serverUrl = url;
+                this.save(settings);
+            },
+            
+            isAutoConnect() {
+                return this.get().autoConnect !== false;
+            },
+            
+            setAutoConnect(value) {
+                const settings = this.get();
+                settings.autoConnect = value;
+                this.save(settings);
+            },
+            
+            getLastDevice() {
+                return this.get().lastDevice || null;
+            },
+            
+            setLastDevice(deviceId) {
+                const settings = this.get();
+                settings.lastDevice = deviceId;
+                this.save(settings);
+            }
+        };
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            if (serverUrl) {
+            initApp();
+        });
+        
+        function initApp() {
+            // Load settings
+            serverUrl = SettingsManager.getServerUrl();
+            autoRefresh = SettingsManager.isAutoConnect();
+            
+            // Update UI
+            document.getElementById('server-url').value = serverUrl;
+            document.getElementById('auto-connect-switch').classList.toggle('active', autoRefresh);
+            
+            // Setup online/offline detection
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            updateOnlineStatus();
+            
+            // Auto-connect if enabled
+            if (autoRefresh && serverUrl) {
                 connectToServer();
             }
-        });
+            
+            // Load pending commands
+            loadPendingCommands();
+        }
+        
+        function handleOnline() {
+            isOnline = true;
+            updateOnlineStatus();
+            showToast('تم استعادة الاتصال');
+            
+            // Sync pending commands
+            syncPendingCommands();
+            
+            // Refresh data
+            if (serverUrl) {
+                loadDashboard();
+            }
+        }
+        
+        function handleOffline() {
+            isOnline = false;
+            updateOnlineStatus();
+            showToast('وضع عدم الاتصال');
+            
+            // Load cached data
+            loadCachedData();
+        }
+        
+        function updateOnlineStatus() {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            const banner = document.getElementById('offline-banner');
+            
+            if (navigator.onLine) {
+                dot.classList.remove('offline');
+                text.textContent = 'متصل';
+                banner.classList.add('hidden');
+            } else {
+                dot.classList.add('offline');
+                text.textContent = 'غير متصل';
+                banner.classList.remove('hidden');
+            }
+        }
         
         function connectToServer() {
             const urlInput = document.getElementById('server-url');
-            serverUrl = urlInput ? urlInput.value : serverUrl;
+            serverUrl = urlInput ? urlInput.value.trim() : serverUrl;
+            
+            // Add https if missing
+            if (serverUrl && !serverUrl.startsWith('http')) {
+                serverUrl = 'https://' + serverUrl;
+                urlInput.value = serverUrl;
+            }
             
             if (!serverUrl) {
-                AndroidInterface.showToast('الرجاء إدخال رابط الخادم');
+                showToast('الرجاء إدخال رابط الخادم');
                 return;
             }
             
-            // Save URL
-            localStorage.setItem('serverUrl', serverUrl);
+            // Save settings
+            SettingsManager.setServerUrl(serverUrl);
             
             // Show dashboard
             document.getElementById('config-screen').classList.add('hidden');
@@ -341,20 +616,65 @@
             // Load data
             loadDashboard();
             
-            AndroidInterface.showToast('تم الاتصال بنجاح');
+            // Start auto refresh
+            if (autoRefresh) {
+                startAutoRefresh();
+            }
+            
+            showToast('تم الاتصال بنجاح');
+            
+            // Notify native
+            if (window.AndroidInterface) {
+                AndroidInterface.onServerConnected(serverUrl);
+            }
+        }
+        
+        async function testConnection() {
+            const urlInput = document.getElementById('server-url');
+            const url = urlInput.value.trim() || DEFAULT_SERVER;
+            
+            showToast('جاري اختبار الاتصال...');
+            
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch(url + '/api/stats', {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeout);
+                
+                if (res.ok) {
+                    showToast('✅ الخادم متصل ويعمل');
+                } else {
+                    showToast('❌ الخادم يستجيب لكن هناك خطأ');
+                }
+            } catch (error) {
+                showToast('❌ فشل الاتصال بالخادم');
+            }
         }
         
         async function loadDashboard() {
+            if (!isOnline) {
+                loadCachedData();
+                return;
+            }
+            
             try {
                 // Fetch stats
                 const statsRes = await fetch(serverUrl + '/api/stats');
                 const statsData = await statsRes.json();
                 
                 if (statsData.ok) {
-                    document.getElementById('devices-count').textContent = statsData.stats.devicesTotal || 0;
-                    document.getElementById('online-count').textContent = statsData.stats.devicesOnline || 0;
-                    document.getElementById('commands-count').textContent = statsData.stats.commandsTotal || 0;
-                    document.getElementById('pending-count').textContent = statsData.stats.commandsPending || 0;
+                    const stats = statsData.stats;
+                    document.getElementById('devices-count').textContent = stats.devicesTotal || 0;
+                    document.getElementById('online-count').textContent = stats.devicesOnline || 0;
+                    document.getElementById('commands-count').textContent = stats.commandsTotal || 0;
+                    document.getElementById('pending-count').textContent = stats.commandsPending || 0;
+                    
+                    // Cache stats
+                    CacheManager.save('stats', stats);
                 }
                 
                 // Fetch devices
@@ -363,25 +683,67 @@
                 
                 if (devicesData.ok) {
                     renderDevices(devicesData.devices);
-                    if (devicesData.devices.length > 0) {
-                        selectedDevice = devicesData.devices[0];
+                    
+                    // Cache devices
+                    CacheManager.save('devices', devicesData.devices);
+                    
+                    // Restore last selected device
+                    const lastDevice = SettingsManager.getLastDevice();
+                    if (lastDevice && devicesData.devices.find(d => d.id === lastDevice)) {
+                        selectedDevice = lastDevice;
+                    } else if (devicesData.devices.length > 0) {
+                        selectedDevice = devicesData.devices[0].id;
                     }
+                    
+                    // Update selection UI
+                    updateDeviceSelection();
                 }
+                
+                // Hide cached badge
+                document.getElementById('cached-badge').style.display = 'none';
+                
             } catch (error) {
-                AndroidInterface.showToast('خطأ في الاتصال: ' + error.message);
+                showToast('خطأ في الاتصال: ' + error.message);
+                loadCachedData();
+            }
+        }
+        
+        function loadCachedData() {
+            // Load cached stats
+            const cachedStats = CacheManager.get('stats');
+            if (cachedStats) {
+                const stats = cachedStats.data;
+                document.getElementById('devices-count').textContent = stats.devicesTotal || 0;
+                document.getElementById('online-count').textContent = stats.devicesOnline || 0;
+                document.getElementById('commands-count').textContent = stats.commandsTotal || 0;
+                document.getElementById('pending-count').textContent = stats.commandsPending || 0;
+                
+                document.getElementById('cached-badge').style.display = 'inline';
+            }
+            
+            // Load cached devices
+            const cachedDevices = CacheManager.get('devices');
+            if (cachedDevices) {
+                renderDevices(cachedDevices.data);
+                
+                const lastDevice = SettingsManager.getLastDevice();
+                if (lastDevice) {
+                    selectedDevice = lastDevice;
+                    updateDeviceSelection();
+                }
             }
         }
         
         function renderDevices(devices) {
             const container = document.getElementById('devices-list');
             
-            if (devices.length === 0) {
+            if (!devices || devices.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #94a3b8;">لا توجد أجهزة مربوطة</p>';
                 return;
             }
             
             container.innerHTML = devices.map(device => `
-                <div class="device-card" onclick="selectDevice('${device.id}')">
+                <div class="device-card ${selectedDevice === device.id ? 'selected' : ''}" onclick="selectDevice('${device.id}')">
                     <div class="device-info">
                         <div class="device-status ${device.active ? '' : 'offline'}"></div>
                         <div>
@@ -398,17 +760,48 @@
         
         function selectDevice(deviceId) {
             selectedDevice = deviceId;
-            AndroidInterface.showToast('تم تحديد الجهاز');
+            SettingsManager.setLastDevice(deviceId);
+            updateDeviceSelection();
+            showToast('تم تحديد الجهاز');
+        }
+        
+        function updateDeviceSelection() {
+            document.querySelectorAll('.device-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            if (selectedDevice) {
+                const cards = document.querySelectorAll('.device-card');
+                cards.forEach(card => {
+                    if (card.getAttribute('onclick').includes(selectedDevice)) {
+                        card.classList.add('selected');
+                    }
+                });
+            }
         }
         
         async function sendCommand(command) {
             if (!selectedDevice) {
-                AndroidInterface.showToast('الرجاء تحديد جهاز أولاً');
+                showToast('الرجاء تحديد جهاز أولاً');
+                return;
+            }
+            
+            // Show pending state
+            const btn = document.querySelector(`[data-cmd="${command}"]`);
+            if (btn) {
+                btn.classList.add('pending');
+            }
+            
+            if (!isOnline) {
+                // Save to pending commands
+                savePendingCommand(command, selectedDevice);
+                showToast('✅ تم حفظ الأمر - سيتم إرساله عند الاتصال');
+                if (btn) btn.classList.remove('pending');
                 return;
             }
             
             try {
-                AndroidInterface.showToast('جاري إرسال الأمر...');
+                showToast('جاري إرسال الأمر...');
                 
                 const res = await fetch(serverUrl + '/api/commands', {
                     method: 'POST',
@@ -422,19 +815,113 @@
                 const data = await res.json();
                 
                 if (data.ok) {
-                    AndroidInterface.showToast('تم إرسال الأمر بنجاح');
-                    AndroidInterface.vibrate(100);
+                    showToast('✅ تم إرسال الأمر بنجاح');
+                    if (window.AndroidInterface) {
+                        AndroidInterface.vibrate(100);
+                    }
                 } else {
-                    AndroidInterface.showToast('فشل إرسال الأمر');
+                    showToast('❌ فشل إرسال الأمر');
                 }
             } catch (error) {
-                AndroidInterface.showToast('خطأ: ' + error.message);
+                // Save as pending if failed
+                savePendingCommand(command, selectedDevice);
+                showToast('❌ خطأ: تم حفظ الأمر للإرسال لاحقاً');
             }
+            
+            if (btn) btn.classList.remove('pending');
+        }
+        
+        function savePendingCommand(command, deviceId) {
+            const pending = JSON.parse(localStorage.getItem('pending_commands') || '[]');
+            pending.push({
+                command: command,
+                deviceId: deviceId,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('pending_commands', JSON.stringify(pending));
+        }
+        
+        function loadPendingCommands() {
+            pendingCommands = JSON.parse(localStorage.getItem('pending_commands') || '[]');
+        }
+        
+        async function syncPendingCommands() {
+            if (pendingCommands.length === 0) return;
+            
+            showToast(`جاري إرسال ${pendingCommands.length} أوامر محفوظة...`);
+            
+            const failed = [];
+            
+            for (const cmd of pendingCommands) {
+                try {
+                    const res = await fetch(serverUrl + '/api/commands', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            deviceId: cmd.deviceId,
+                            command: cmd.command
+                        })
+                    });
+                    
+                    if (!res.ok) {
+                        failed.push(cmd);
+                    }
+                } catch (e) {
+                    failed.push(cmd);
+                }
+            }
+            
+            // Update pending commands
+            localStorage.setItem('pending_commands', JSON.stringify(failed));
+            pendingCommands = failed;
+            
+            if (failed.length === 0) {
+                showToast('✅ تم إرسال جميع الأوامر المحفوظة');
+            } else {
+                showToast(`⚠️ فشل إرسال ${failed.length} أوامر`);
+            }
+        }
+        
+        function refreshData() {
+            showToast('جاري التحديث...');
+            loadDashboard();
+        }
+        
+        function startAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            refreshInterval = setInterval(() => {
+                if (isOnline && document.getElementById('dashboard').classList.contains('hidden') === false) {
+                    loadDashboard();
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+        
+        function toggleAutoConnect() {
+            autoRefresh = !autoRefresh;
+            document.getElementById('auto-connect-switch').classList.toggle('active', autoRefresh);
+            SettingsManager.setAutoConnect(autoRefresh);
+            
+            showToast(autoRefresh ? 'تم تفعيل الاتصال التلقائي' : 'تم إيقاف الاتصال التلقائي');
         }
         
         function showConfig() {
             document.getElementById('config-screen').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
+            
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+        
+        function showToast(message) {
+            if (window.AndroidInterface) {
+                AndroidInterface.showToast(message);
+            } else {
+                console.log('Toast:', message);
+            }
         }
     </script>
 </body>

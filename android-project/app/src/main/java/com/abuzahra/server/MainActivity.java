@@ -2,10 +2,16 @@ package com.abuzahra.server;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,10 +43,15 @@ import java.io.ByteArrayInputStream;
 /**
  * أبو الزهراء - MainActivity
  * Native Android wrapper for the web dashboard
+ * Supports offline mode and session persistence
  */
 public class MainActivity extends AppCompatActivity {
 
     private static final String APP_URL = "file:///android_asset/index.html";
+    private static final String PREFS_NAME = "AbuZahraPrefs";
+    private static final String KEY_SERVER_URL = "server_url";
+    private static final String KEY_LAST_SESSION = "last_session";
+    private static final String KEY_AUTO_CONNECT = "auto_connect";
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final int FILE_CHOOSER_REQUEST_CODE = 1002;
 
@@ -48,11 +59,18 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefresh;
     private ValueCallback<Uri[]> filePathCallback;
     private WebChromeClient.FileChooserParams fileChooserParams;
+    private SharedPreferences prefs;
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
+    private boolean isOnline = true;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initialize SharedPreferences
+        prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
         // Setup window
         setupWindow();
@@ -62,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup WebView
         setupWebView();
+
+        // Setup network monitoring
+        setupNetworkMonitoring();
 
         // Check permissions
         checkPermissions();
@@ -113,13 +134,18 @@ public class MainActivity extends AppCompatActivity {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
-        // Enable DOM storage
+        // Enable DOM storage for session persistence
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
+        
+        // Set database path for older Android versions
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            settings.setDatabasePath(getFilesDir().getPath() + "/databases/");
+        }
 
-        // Enable caching
+        // Enable caching for offline mode
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-
+        
         // Enable file access
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
@@ -158,6 +184,9 @@ public class MainActivity extends AppCompatActivity {
                 // Inject custom CSS for better mobile experience
                 String css = "document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');";
                 view.evaluateJavascript(css, null);
+                
+                // Inject network status
+                updateNetworkStatusInJS();
             }
 
             @Override
@@ -174,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
             @Nullable
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                // Handle offline mode here if needed
+                // Handle offline mode - return cached content if available
                 return super.shouldInterceptRequest(view, request);
             }
         });
@@ -215,6 +244,54 @@ public class MainActivity extends AppCompatActivity {
 
         // Add JavaScript interface for native features
         webView.addJavascriptInterface(new AndroidInterface(this), "AndroidInterface");
+    }
+    
+    private void setupNetworkMonitoring() {
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        
+        if (connectivityManager != null) {
+            NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                .build();
+            
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(@NonNull Network network) {
+                    isOnline = true;
+                    runOnUiThread(() -> {
+                        updateNetworkStatusInJS();
+                        showToastOnUiThread("تم استعادة الاتصال بالإنترنت");
+                    });
+                }
+                
+                @Override
+                public void onLost(@NonNull Network network) {
+                    isOnline = false;
+                    runOnUiThread(() -> {
+                        updateNetworkStatusInJS();
+                        showToastOnUiThread("وضع عدم الاتصال - البيانات محفوظة محلياً");
+                    });
+                }
+            };
+            
+            connectivityManager.registerNetworkCallback(networkRequest, networkCallback);
+            
+            // Check initial status
+            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+            isOnline = capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+        }
+    }
+    
+    private void updateNetworkStatusInJS() {
+        if (webView != null) {
+            String js = String.format("window.isOnline = %s; if(typeof updateOnlineStatus === 'function') updateOnlineStatus();", isOnline);
+            webView.evaluateJavascript(js, null);
+        }
+    }
+    
+    private void showToastOnUiThread(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void openFileChooser() {
@@ -290,6 +367,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         webView.onResume();
+        
+        // Check network status on resume
+        if (connectivityManager != null) {
+            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+            boolean wasOnline = isOnline;
+            isOnline = capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+            
+            if (wasOnline != isOnline) {
+                updateNetworkStatusInJS();
+            }
+        }
     }
 
     @Override
@@ -300,6 +388,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (networkCallback != null && connectivityManager != null) {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        }
         webView.destroy();
         super.onDestroy();
     }

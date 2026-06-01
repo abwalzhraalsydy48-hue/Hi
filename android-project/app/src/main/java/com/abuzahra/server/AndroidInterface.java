@@ -2,6 +2,7 @@ package com.abuzahra.server;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -22,10 +23,13 @@ public class AndroidInterface {
 
     private final MainActivity activity;
     private final Context context;
+    private final SharedPreferences prefs;
+    private static final String PREFS_NAME = "AbuZahraPrefs";
 
     public AndroidInterface(MainActivity activity) {
         this.activity = activity;
         this.context = activity;
+        this.prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
     @JavascriptInterface
@@ -142,7 +146,7 @@ public class AndroidInterface {
         try {
             return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
         } catch (Exception e) {
-            return "1.0.0";
+            return "2.0";
         }
     }
 
@@ -161,5 +165,136 @@ public class AndroidInterface {
         activity.runOnUiThread(() -> {
             // Reload the web view
         });
+    }
+    
+    // ==================== Session Management ====================
+    
+    @JavascriptInterface
+    public void saveSetting(String key, String value) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+    
+    @JavascriptInterface
+    public String getSetting(String key, String defaultValue) {
+        return prefs.getString(key, defaultValue);
+    }
+    
+    @JavascriptInterface
+    public void saveServerUrl(String url) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("server_url", url);
+        editor.putLong("last_connection", System.currentTimeMillis());
+        editor.apply();
+    }
+    
+    @JavascriptInterface
+    public String getServerUrl() {
+        return prefs.getString("server_url", "https://alsydyabwalzhra.online");
+    }
+    
+    @JavascriptInterface
+    public void saveSession(String sessionData) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("session_data", sessionData);
+        editor.putLong("session_time", System.currentTimeMillis());
+        editor.apply();
+    }
+    
+    @JavascriptInterface
+    public String getSession() {
+        return prefs.getString("session_data", "{}");
+    }
+    
+    @JavascriptInterface
+    public void clearSession() {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove("session_data");
+        editor.remove("server_url");
+        editor.apply();
+    }
+    
+    @JavascriptInterface
+    public boolean hasStoredSession() {
+        return prefs.contains("session_data") || prefs.contains("server_url");
+    }
+    
+    @JavascriptInterface
+    public long getLastConnectionTime() {
+        return prefs.getLong("last_connection", 0);
+    }
+    
+    @JavascriptInterface
+    public void setAutoConnect(boolean enabled) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("auto_connect", enabled);
+        editor.apply();
+    }
+    
+    @JavascriptInterface
+    public boolean isAutoConnectEnabled() {
+        return prefs.getBoolean("auto_connect", true);
+    }
+    
+    @JavascriptInterface
+    public void setSelectedDevice(String deviceId) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("selected_device", deviceId);
+        editor.apply();
+    }
+    
+    @JavascriptInterface
+    public String getSelectedDevice() {
+        return prefs.getString("selected_device", "");
+    }
+    
+    // ==================== Network Status ====================
+    
+    @JavascriptInterface
+    public boolean isNetworkAvailable() {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager) 
+            context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            android.net.NetworkCapabilities capabilities = 
+                cm.getNetworkCapabilities(cm.getActiveNetwork());
+            return capabilities != null && 
+                   capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        }
+        return false;
+    }
+    
+    @JavascriptInterface
+    public boolean isWifiConnected() {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager) 
+            context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            android.net.NetworkCapabilities capabilities = 
+                cm.getNetworkCapabilities(cm.getActiveNetwork());
+            return capabilities != null && 
+                   capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI);
+        }
+        return false;
+    }
+    
+    @JavascriptInterface
+    public boolean isMobileDataConnected() {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager) 
+            context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            android.net.NetworkCapabilities capabilities = 
+                cm.getNetworkCapabilities(cm.getActiveNetwork());
+            return capabilities != null && 
+                   capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR);
+        }
+        return false;
+    }
+    
+    // ==================== Server Connection Callback ====================
+    
+    @JavascriptInterface
+    public void onServerConnected(String serverUrl) {
+        saveServerUrl(serverUrl);
+        showToast("تم حفظ إعدادات الخادم");
     }
 }
