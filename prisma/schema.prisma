@@ -1,0 +1,92 @@
+// Abu-Zahra Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Device {
+  id          String   @id
+  name        String?
+  model       String?
+  brand       String?
+  os          String?
+  battery     String?
+  network     String?
+  location    String?
+  active      Boolean  @default(false)
+  token       String?
+  lastSeen    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  commands    Command[]
+  events      Event[]
+  linkCodeId  String?  @unique
+  linkCode    LinkCode?  @relation(fields: [linkCodeId], references: [id])
+}
+
+model Command {
+  id          String   @id @default(cuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  command     String
+  params      String?  // JSON string
+  status      String   @default("pending") // pending, sent, completed, error
+  result      String?  // JSON string
+  createdAt   DateTime @default(now())
+  sentAt      DateTime?
+  completedAt DateTime?
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  event     String
+  details   String?  // JSON string
+  level     String   @default("info") // info, warning, error
+  createdAt DateTime @default(now())
+}
+
+model LinkCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  used      Boolean  @default(false)
+  deviceId  String?  @unique
+  device    Device?
+  sessionId String?
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+}
+
+model Setting {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  value             String
+  updatedAt         DateTime @updatedAt
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  username  String
+  ip        String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model TelegramMessage {
+  id           String   @id @default(cuid())
+  chatId       String
+  messageId    String
+  text         String?
+  type         String   @default("text") // text, photo, video, document
+  fromBot      Boolean  @default(false)
+  processed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
