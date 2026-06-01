@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Enable caching
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setAppCacheEnabled(true);
 
         // Enable file access
         settings.setAllowFileAccess(true);
