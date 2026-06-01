@@ -96,11 +96,11 @@ export async function GET(
       }, { status: 400 });
     }
 
-    // Get pending commands
+    // Get pending commands (check both 'pending' and 'queued' status)
     const commands = await db.command.findMany({
       where: {
         deviceId,
-        status: 'queued'
+        status: { in: ['pending', 'queued'] }
       },
       orderBy: [
         { priority: 'desc' },
