@@ -10,14 +10,26 @@ export async function GET() {
     const events = await db.event.count();
 
     const now = new Date();
+    const ONLINE_THRESHOLD_MS = 60 * 1000; // 60 seconds
+    
     const onlineDevices = devices.filter(d => {
       if (!d.lastSeen) return false;
-      const diff = now.getTime() - d.lastSeen.getTime();
-      return diff < 5 * 60 * 1000; // 5 minutes
+      const diff = now.getTime() - new Date(d.lastSeen).getTime();
+      return diff < ONLINE_THRESHOLD_MS;
     });
 
-    const pendingCommands = commands.filter(c => c.status === 'pending').length;
-    const completedCommands = commands.filter(c => c.status === 'completed').length;
+    // Count commands by status (support both old and new status names)
+    const pendingCommands = commands.filter(c => 
+      c.status === 'pending' || c.status === 'queued' || c.status === 'delivered'
+    ).length;
+    
+    const completedCommands = commands.filter(c => 
+      c.status === 'completed' || c.status === 'success'
+    ).length;
+    
+    const failedCommands = commands.filter(c => 
+      c.status === 'failed' || c.status === 'timeout'
+    ).length;
 
     return NextResponse.json({
       ok: true,
@@ -27,6 +39,7 @@ export async function GET() {
         commandsTotal: commands.length,
         commandsPending: pendingCommands,
         commandsCompleted: completedCommands,
+        commandsFailed: failedCommands,
         eventsTotal: events,
         totalRegisteredCommands: getTotalCommands(),
         serverTime: new Date().toISOString()

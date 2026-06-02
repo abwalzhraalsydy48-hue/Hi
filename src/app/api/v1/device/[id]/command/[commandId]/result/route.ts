@@ -38,11 +38,13 @@ export async function POST(
     await db.command.update({
       where: { id: commandId },
       data: {
-        status: success ? 'completed' : 'failed',
+        status: success ? 'success' : 'failed',
         completedAt: new Date(),
         result: data ? JSON.stringify(data) : null,
         errorMessage: cmdError || null,
-        errorCode: success ? null : 'EXECUTION_ERROR'
+        errorCode: success ? null : 'EXECUTION_ERROR',
+        totalDuration: command.createdAt ? 
+          (new Date().getTime() - new Date(command.createdAt).getTime()) / 1000 : null
       }
     });
 
